@@ -1,13 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-
-
-class User(AbstractUser):
-    pass
 
 
 class Category(models.Model):
-    name = 
+    # name = 
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -15,7 +10,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name =
+    # name =
     slug = models.SlugField(unique=True)
 
 
@@ -24,14 +19,14 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = 
+    # name = 
     year = models.DateTimeField(
         'Дата публикации',
         auto_now_add=True
     )
     description = models.TextField(max_length=2000, blank=True, null=True)
-    genre = 
-    category = 
+    # genre = 
+    # category = 
 
 
 class Review(models.Model):
