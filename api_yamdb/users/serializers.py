@@ -5,5 +5,11 @@ from .models import CustomUser
 class UsersSerializer(serializers.ModelSerializer):
 
     class Meta():
-        fields = '__all__'
+        fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'bio'
+        )
         model = CustomUser
