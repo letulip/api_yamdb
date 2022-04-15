@@ -7,13 +7,12 @@ from .views import UsersViewSet
 app_name = 'users'
 
 router = routers.DefaultRouter()
-router.register(r'users', UsersViewSet)
+router.register(
+    r'users',
+    UsersViewSet,
+    basename='UsersViewSet'
+)
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path(
-    #     'users/',
-    #     UsersViewSet,
-    #     name='custom_users'
-    # )
 ]

@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import viewsets, filters
 
 from .models import CustomUser
@@ -15,3 +17,4 @@ class UsersViewSet(viewsets.ModelViewSet):
         '^username',
         '$username'
     )
+    lookup_field = 'username'
