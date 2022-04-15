@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -10,7 +11,14 @@ class CustomUser(AbstractUser):
     )
     username = models.CharField(
         max_length=150,
-        unique=True
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',
+                message="""This value may contain only letters,
+                digits and @/./+/-/_ characters."""
+            ),
+        ],
     )
     first_name = models.CharField(
         max_length=150,
