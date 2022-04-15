@@ -10,6 +10,7 @@ class UsersSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            'bio'
+            'bio',
+            'role'
         )
         model = CustomUser

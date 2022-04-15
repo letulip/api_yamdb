@@ -4,6 +4,16 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
+    USER = 1
+    MODERATOR = 2
+    ADMIN = 3
+
+    ROLE_CHOICES = (
+        (USER, 'User'),
+        (MODERATOR, 'Moderator'),
+        (ADMIN, 'Admin')
+    )
+
     email = models.EmailField(
         max_length=255,
         unique=True,
@@ -33,6 +43,12 @@ class CustomUser(AbstractUser):
     bio = models.TextField(
         blank=True,
         null=True
+    )
+    role = models.PositiveSmallIntegerField(
+        choices=ROLE_CHOICES,
+        blank=True,
+        null=True,
+        default=USER
     )
 
     def __str__(self) -> str:
