@@ -1,11 +1,11 @@
 # from django.core.mail import send_mail
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
 from .tokens import get_check_hash
@@ -65,11 +65,3 @@ class UserKeySerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         attrs.update({'password': ''})
         return super(UserKeySerializer, self).validate(attrs)
-
-
-# "username": "admin",
-# "confirmation_code": "600-f81e9cce8e81561d26db"
-# {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDI5MDg4OSwiaWF0IjoxNjUwMjA0NDg5LCJqdGkiOiI0Y2M2MGMzZjYyYzU0MjUwOTEwYmViY2NjM2FkNzgyMCIsInVzZXJfaWQiOjF9.Q2Y7XCSrfdnG1uty_0POQYNA8Rc0aNEy3SRLAYfBhSo",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMjkwODg5LCJpYXQiOjE2NTAyMDQ0ODksImp0aSI6IjU0Y2QyNWZkYzdhMTRlNzQ5OTUzMTcxODM0MjcyNzdiIiwidXNlcl9pZCI6MX0.OjmoppxSCRri5G-a-uDwN4X_Ab8H9Z6p_p_ZwqjIWC8"
-# }

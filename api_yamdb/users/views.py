@@ -15,7 +15,6 @@ from api.permissions import IsOwnerModerAdminOrReadOnly
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
-    # permission_classes = (AdminOnly) TODO
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     pagination_class = CustomPagination
@@ -29,7 +28,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 class UserAuthViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
-    # permission_classes = (AdminOnly) TODO
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
 
 
