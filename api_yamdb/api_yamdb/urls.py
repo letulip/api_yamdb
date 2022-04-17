@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 
 
 urlpatterns = [
+    path('', include('users.urls')),
     path('admin/', admin.site.urls),
     path(
         'redoc/',
