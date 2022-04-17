@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Category(models.Model):
-    # name = 
+    name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -10,7 +10,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    # name =
+    name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
 
 
@@ -19,15 +19,17 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    # name = 
-    year = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
-    )
+    name = models.CharField(max_length=200)
+    year = models.IntegerField()
     description = models.TextField(max_length=2000, blank=True, null=True)
-    # genre = 
-    # category = 
+    genre = models.ManyToManyField(Genre)
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE,
+        related_name='Category', blank=True, null=True
+    )
 
+    def __str__(self):
+        return self.name
 
 class Review(models.Model):
     pass
@@ -35,4 +37,3 @@ class Review(models.Model):
 
 class Rating(models.Model):
     pass
-
