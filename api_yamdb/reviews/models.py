@@ -1,5 +1,7 @@
 from django.db import models
 
+from users.models import CustomUser
+
 
 class Category(models.Model):
     # name = 
@@ -50,11 +52,11 @@ class Review(models.Model):
     #    related_name='reviews',
     #    on_delete=models.SET_NULL
     # )
-    # author = models.ForeignKey(
-    #    User,
-    #    on_delete=models.CASCADE,
-    #    related_name='reviews'
-    # )
+    author = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='review'
+    )
     # Ждём
     # title = models.ForeignKey(
     #    Title,
@@ -71,12 +73,11 @@ class Comment(models.Model):
         Review,
         on_delete=models.CASCADE,
     )
-    # ждём модель User
-    # author = models.ForeignKey(
-    #    User,
-    #    on_delete=models.CASCADE,
-    #    related_name='reviews'
-    # )
+    author = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='comment'
+    )
     text = models.TextField(
         'Текст коммента',
         help_text='Введите коммент'
