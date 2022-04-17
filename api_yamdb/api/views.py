@@ -1,22 +1,17 @@
 from django.shortcuts import render
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework import viewsets 
+from rest_framework import viewsets, permissions 
 from rest_framework import filters
 from .permissions import IsAdminOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import User, Category, Genre, Title, Review, Rating 
-from .serializers import UserSerializer, CategorySerializer,GenreSerializer, TitleSerializer, ReviewSerializer, RatingSerializer
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    pass
+from reviews.models import Category, Genre, Title, Review, Rating 
+from .serializers import CategorySerializer,GenreSerializer, TitleSerializer, ReviewSerializer, RatingSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
-    ]
+    # permission_classes = [
+    #     permissions.IsAuthenticatedOrReadOnly,
+    #     IsAdminOrReadOnly,
+    # ]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer 
     filter_backends = (filters.SearchFilter,)
@@ -24,10 +19,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
-    ]
+    # permission_classes = [
+    #     permissions.IsAuthenticatedOrReadOnly,
+    #     IsAdminOrReadOnly,
+    # ]
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter,)
@@ -35,10 +30,10 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
-    ]
+    # permission_classes = [
+    #     permissions.IsAuthenticatedOrReadOnly,
+    #     IsAdminOrReadOnly,
+    # ]
     queryset = Title.objects.all()
     serializer_class = TitleSerializer 
     filter_backends = (DjangoFilterBackend,)

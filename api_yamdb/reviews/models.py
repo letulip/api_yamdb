@@ -22,7 +22,10 @@ class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
     description = models.TextField(max_length=2000, blank=True, null=True)
-    genre = models.ManyToManyField(Genre)
+    genre = models.ForeignKey(
+        Category, on_delete=models.CASCADE,
+        related_name='Genre', blank=True, null=True
+    )
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE,
         related_name='Category', blank=True, null=True
