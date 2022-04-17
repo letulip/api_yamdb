@@ -108,7 +108,10 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-# REST_FRAMEWORK = {
-#     # 'DEFAULT_PAGINATION_CLASS': 'users.pagination.CustomPagination',
-#     # 'PAGE_SIZE': 100
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    # 'DEFAULT_PAGINATION_CLASS': 'users.pagination.CustomPagination',
+    # 'PAGE_SIZE': 100
+}
