@@ -1,10 +1,37 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-class IsAdminOrReadOnly(permissions.BasePermission):
-    message = 'Действие доступно только администратору!'
+from api_yamdb.settings import USER, MODERATOR, ADMIN
+
+
+class IsOwnerModerAdminOrReadOnly(BasePermission):
 
     def has_permission(self, request, view):
-        return (
-            request.user in permissions.SAFE_METHODS
-            or request.user.is_staff or request.user.role == 'admin'
-        )
+        return (request.user.id is not None
+                or request.method in SAFE_METHODS)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.author == request.user or request.user.role != USER
+
+
+class IsAdminOrReadOnly(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.role != ADMIN
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.author == request.user or request.user.role != ADMIN
+
+
+class IsModerOrReadOnly(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.role != MODERATOR
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.author == request.user or request.user.role != MODERATOR

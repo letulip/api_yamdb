@@ -1,11 +1,11 @@
 # from django.core.mail import send_mail
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+# from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
 from .tokens import get_check_hash

@@ -32,12 +32,15 @@ class Migration(migrations.Migration):
             name='Rating',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('value', models.PositiveSmallIntegerField(default=10, verbose_name='Рейтинг')),
             ],
         ),
         migrations.CreateModel(
             name='Review',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(help_text='Введите текст отзыва', verbose_name='Текст отзыва')),
+                ('pub_date', models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
@@ -49,6 +52,14 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True, max_length=2000, null=True)),
                 ('category', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='Category', to='reviews.Category')),
                 ('genre', models.ManyToManyField(to='reviews.Genre')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Comment',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('text', models.TextField(help_text='Введите коммент', verbose_name='Текст коммента')),
+                ('review', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='reviews.Review')),
             ],
         ),
     ]
