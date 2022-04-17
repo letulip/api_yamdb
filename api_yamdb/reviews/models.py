@@ -44,29 +44,40 @@ class Rating(models.Model):
 
 
 class Review(models.Model):
-    CHOICES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    CHOICES = (
+        (1, 'один'),
+        (2, 'два'),
+        (3, 'три'),
+        (4, 'четыре'),
+        (5, 'пять'),
+        (6, 'шесть'),
+        (7, 'семь'),
+        (8, 'восемь'),
+        (9, 'девять'),
+        (10, 'десять')
+    )
     # AVG = Review.objects.aggregate(Avg(rating))
     text = models.TextField(
         'Текст отзыва',
         help_text='Введите текст отзыва'
     )
-    # score = models.ForeignKey(
-    #    Rating,
-    #    choices=CHOICES,
-    #    help_text='Оцените произведение',
-    #    related_name='reviews',
-    #    on_delete=models.SET_NULL
-    # )
+    score = models.ForeignKey(
+        Rating,
+        choices=CHOICES,
+        help_text='Оцените произведение',
+        related_name='reviews',
+        default=10,
+        on_delete=models.SET_DEFAULT
+    )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='review'
     )
-    # Ждём
-    # title = models.ForeignKey(
-    #    Title,
-    #    on_delete=models.CASCADE
-    # )
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE
+    )
     pub_date = models.DateTimeField(
         auto_now_add=True
     )
