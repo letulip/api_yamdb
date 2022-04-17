@@ -4,7 +4,7 @@ from users.models import CustomUser
 
 
 class Category(models.Model):
-    # name = 
+    name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -12,7 +12,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    # name =
+    name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
 
 
@@ -21,15 +21,20 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    # name = 
-    year = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
-    )
+    name = models.CharField(max_length=200)
+    year = models.IntegerField()
     description = models.TextField(max_length=2000, blank=True, null=True)
-    # genre = 
-    # category = 
+    genre = models.ForeignKey(
+        Category, on_delete=models.CASCADE,
+        related_name='Genre', blank=True, null=True
+    )
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE,
+        related_name='Category', blank=True, null=True
+    )
 
+    def __str__(self):
+        return self.name
 
 class Rating(models.Model):
     value = models.PositiveSmallIntegerField(
@@ -67,7 +72,6 @@ class Review(models.Model):
     )
 
 
-
 class Comment(models.Model):
     review = models.ForeignKey(
         Review,
@@ -82,4 +86,3 @@ class Comment(models.Model):
         'Текст коммента',
         help_text='Введите коммент'
     )
-
