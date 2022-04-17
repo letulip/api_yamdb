@@ -9,12 +9,14 @@ from .models import CustomUser
 from .serializers import UsersSerializer, UserKeySerializer
 from .pagination import CustomPagination
 from .tokens import get_check_hash
+from api.permissions import IsOwnerModerAdminOrReadOnly
 
 
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
     # permission_classes = (AdminOnly) TODO
+    permission_classes = (IsOwnerModerAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     pagination_class = CustomPagination
     search_fields = (
@@ -28,6 +30,7 @@ class UserAuthViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
     # permission_classes = (AdminOnly) TODO
+    permission_classes = (IsOwnerModerAdminOrReadOnly,)
 
 
 class UserKeyView(TokenObtainPairView):

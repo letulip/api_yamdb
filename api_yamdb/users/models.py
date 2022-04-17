@@ -2,17 +2,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 
+from api_yamdb.settings import USER, ROLE_CHOICES
 
 class CustomUser(AbstractUser):
-    USER = 1
-    MODERATOR = 2
-    ADMIN = 3
-
-    ROLE_CHOICES = (
-        (USER, 'User'),
-        (MODERATOR, 'Moderator'),
-        (ADMIN, 'Admin')
-    )
 
     email = models.EmailField(
         max_length=255,
