@@ -1,6 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
 
 from reviews.models import Category, Genre, Title, Review, Rating, Comment
 from .serializers import (
@@ -10,6 +11,7 @@ from .serializers import (
     ReviewSerializer,
     RatingSerializer,
     CommentSerializer
+
 )
 from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly
 
@@ -20,10 +22,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     ]
     queryset = Category.objects.all()
-    serializer_class = CategorySerializer 
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',) 
-
+    lookup_field = 'slug'
 
 class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = [
@@ -32,19 +35,21 @@ class GenreViewSet(viewsets.ModelViewSet):
     ]
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',) 
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
+        IsOwnerModerAdminOrReadOnly,
     ]
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year') 
+    #filterset_class = TitleFilter
+    filterset_fields = ('category', 'genre', 'name', 'year') 
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
