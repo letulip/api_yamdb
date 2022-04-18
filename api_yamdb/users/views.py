@@ -1,9 +1,12 @@
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework.status import HTTP_404_NOT_FOUND
+from rest_framework.permissions import IsAuthenticated
 
 from .models import CustomUser
 from .serializers import UsersSerializer, UserKeySerializer
@@ -17,10 +20,11 @@ from api.permissions import (
 
 class CurrentUserViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'username'
 
     def get_queryset(self):
-        user = get_object_or_404(CustomUser, username=self.kwargs['username'])
-        return user
+        return CustomUser.objects.filter(username=self.request.user)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -47,23 +51,29 @@ class UserKeyView(TokenObtainPairView):
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
-        username = request.data['username']
-        user = get_object_or_404(CustomUser, username=username)
-        code = request.data['confirmation_code']
-        if (get_check_hash.check_token(user=user, token=code)):
-            refresh = RefreshToken.for_user(user)
-            return JsonResponse(
-                {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-            )
-        else:
+        print(f'--->>> {request.data}')
+        try:
+            username = request.data['username']
+            user = get_object_or_404(CustomUser, username=username)
+            code = request.data['confirmation_code']
+            if (get_check_hash.check_token(user=user, token=code)):
+                refresh = RefreshToken.for_user(user)
+                return JsonResponse(
+                    {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                )
             return JsonResponse(
                 {
                     'confirmation_code': 'Unexeptable',
                 }
             )
+        except BaseException as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            return Response(status=HTTP_404_NOT_FOUND)
+            # return JsonResponse()
+
 
 
 # admin

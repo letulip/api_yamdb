@@ -41,7 +41,8 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True
     )
-    role = models.PositiveSmallIntegerField(
+    role = models.CharField(
+        max_length=100,
         choices=ROLE_CHOICES,
         blank=True,
         null=True,

@@ -7,11 +7,11 @@ from .views import UsersViewSet, UserAuthViewSet, UserKeyView, CurrentUserViewSe
 app_name = 'users'
 
 router = routers.DefaultRouter()
-# router.register(
-#     r'users/me/',
-#     CurrentUserViewSet,
-#     basename='CurrentUserViewSet'
-# )
+router.register(
+    'users/me',
+    CurrentUserViewSet,
+    basename='CurrentUserViewSet'
+)
 router.register(
     r'users',
     UsersViewSet,

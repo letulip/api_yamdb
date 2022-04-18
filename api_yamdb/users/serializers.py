@@ -12,8 +12,11 @@ from rest_framework.status import HTTP_200_OK
 
 from .models import CustomUser
 from .tokens import get_check_hash
+from api_yamdb.settings import USER, MODERATOR, ADMIN, ROLE_CHOICES
+
 
 class UsersSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
 
     class Meta():
         fields = (
@@ -25,6 +28,10 @@ class UsersSerializer(serializers.ModelSerializer):
             'role'
         )
         model = CustomUser
+
+    def get_role(self, obj):
+        print()
+        return obj.role
 
     def validate_password(self, value: str) -> str:
         """
