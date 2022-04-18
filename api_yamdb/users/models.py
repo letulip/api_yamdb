@@ -21,9 +21,10 @@ class CustomUser(AbstractUser):
                 digits and @/./+/-/_ characters."""
             ),
             RegexValidator(
-                regex=r'/\bme\b|\bMe\b/gm',
-                message="""You can't create Me username."""
-            ),
+                regex=r'^\b(m|M)e\b',
+                inverse_match=True,
+                message="""Username Me registration not allowed."""
+            )
         ],
     )
     first_name = models.CharField(

@@ -1,10 +1,13 @@
 # from django.core.mail import send_mail
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
-# from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework.status import HTTP_200_OK
 # from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
@@ -32,7 +35,7 @@ class UsersSerializer(serializers.ModelSerializer):
     # def validate_username(self, value: str) -> bool:
     #     return value != 'me'
 
-    def create(self, validated_data):
+    def post(self, validated_data):
         new_user = CustomUser.objects.create(**validated_data)
         username = validated_data.pop('username')
         email = validated_data.pop('email')
@@ -51,7 +54,10 @@ class UsersSerializer(serializers.ModelSerializer):
             f'Your confirmation code: {code}.',
         )
         print(code)
-        return new_user
+        # return Response(data=new_user, status=HTTP_200_OK)
+        # return new_user
+        return get_object_or_404(CustomUser, username=username)
+        # return JsonResponse()
 
 
 class UserKeySerializer(TokenObtainPairSerializer):
