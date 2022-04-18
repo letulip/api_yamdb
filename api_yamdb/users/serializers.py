@@ -15,8 +15,23 @@ from .tokens import get_check_hash
 from api_yamdb.settings import USER, MODERATOR, ADMIN, ROLE_CHOICES
 
 
+# class CurrentUserSerializer(serializers.ModelSerializer):
+    
+#     class Meta():
+#         fields = (
+#             'email',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'bio',
+#             'role'
+#         )
+#         model = CustomUser
+
+#     def get()
+
+
 class UsersSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
 
     class Meta():
         fields = (
@@ -29,10 +44,6 @@ class UsersSerializer(serializers.ModelSerializer):
         )
         model = CustomUser
 
-    def get_role(self, obj):
-        print()
-        return obj.role
-
     def validate_password(self, value: str) -> str:
         """
         Захешировать пустой пароль.
@@ -42,7 +53,7 @@ class UsersSerializer(serializers.ModelSerializer):
     # def validate_username(self, value: str) -> bool:
     #     return value != 'me'
 
-    def post(self, validated_data):
+    def create(self, validated_data):
         new_user = CustomUser.objects.create(**validated_data)
         username = validated_data.pop('username')
         email = validated_data.pop('email')

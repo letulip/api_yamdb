@@ -1,5 +1,6 @@
 from django.http import HttpRequest, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.generic import DetailView
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -18,13 +19,28 @@ from api.permissions import (
 )
 
 
+class CurrentUserDetailView(DetailView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UsersSerializer
+
+    def get_object(self):
+        print(self.request.user)
+        user = get_object_or_404(CustomUser, username=self.request.user)
+        print(user)
+        return user
+
+
 class CurrentUserViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = None
     lookup_field = 'username'
+    # http_method_names = ['patch', 'get', ]
 
     def get_queryset(self):
         return CustomUser.objects.filter(username=self.request.user)
+        return get_object_or_404(CustomUser, username=self.request.user)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -51,7 +67,6 @@ class UserKeyView(TokenObtainPairView):
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
-        print(f'--->>> {request.data}')
         try:
             username = request.data['username']
             user = get_object_or_404(CustomUser, username=username)
@@ -77,16 +92,11 @@ class UserKeyView(TokenObtainPairView):
 
 
 # admin
-# 601-c13e492d7f2dc54de868
-#  {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM1OTA2MSwiaWF0IjoxNjUwMjcyNjYxLCJqdGkiOiJhZGYzYWExM2U4NDQ0ZGYyYjk0ZjE3Mzc2ZmNkYjUyYiIsInVzZXJfaWQiOjF9.EVD-4o-ruA9EgX7EZ89A-5Gh6AVCHtuZA1YgJsuD3J8",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzU5MDYxLCJpYXQiOjE2NTAyNzI2NjEsImp0aSI6IjQzOTkzZmFiOGE1YTRkMDFhMGYwZTY0ZDc5MzMzMjg2IiwidXNlcl9pZCI6MX0.Nu1__3Ywq8z-1awN4hEAYo_6QJI6Br4Nm-hVN-DAotw"
-# }
 
 
 # tulip
-# 601-248f8b311d65f5726604
+# 601-c5126a7b0b34aef7ce17
 # {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM1OTIzMywiaWF0IjoxNjUwMjcyODMzLCJqdGkiOiI3OGExMjU2MzQyNjY0YmEwYWY1ZWMxMzA1ZTg3ODUzYyIsInVzZXJfaWQiOjJ9.qAh3pmqpk0bgbcq3VlPhvz84lX7brIO1R9IxVoQqrcI",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzU5MjMzLCJpYXQiOjE2NTAyNzI4MzMsImp0aSI6IjVlMTJmMTBjZjQ5YTQ5ZWNiOTJiY2VlMDI0NmI0NjI3IiwidXNlcl9pZCI6Mn0.-SYev3JUmoxJOmehOKL7sb9rVmhSWUpReEkrbnDo0X4"
+#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM3MzU1NywiaWF0IjoxNjUwMjg3MTU3LCJqdGkiOiJjNWUyNmIxM2QzZTc0OGQ3ODBmMmQ5NTAxOTliMjlkYSIsInVzZXJfaWQiOjN9.Cs_p5ka57vMda1UOtp18-WOQkAMvSy5RJp-ReXmKaLw",
+#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzczNTU3LCJpYXQiOjE2NTAyODcxNTcsImp0aSI6ImM0ZDczMDZlNTNmZDQxODBiNDQyZGQ2OTA1ZDVmYWE1IiwidXNlcl9pZCI6M30.jgC2V6f3_LTmqLAhtjLmuM64bKWrBWuE6YbLkQmcMrw"
 # }

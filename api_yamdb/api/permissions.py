@@ -15,6 +15,9 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
         return request.user.role != USER
 
 
+# IsSuperUser TODO
+
+
 class IsAdminOrReadOnly(BasePermission):
 
     def has_permission(self, request, view):
