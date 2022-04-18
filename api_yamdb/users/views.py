@@ -1,3 +1,4 @@
+import json
 from django.http import HttpRequest, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
@@ -6,8 +7,10 @@ from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 
 from .models import CustomUser
 from .serializers import UsersSerializer, UserKeySerializer
@@ -19,16 +22,38 @@ from api.permissions import (
 )
 
 
-class CurrentUserDetailView(DetailView):
+class CurrentUserDetailView(GenericAPIView):
     queryset = CustomUser.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = UsersSerializer
+    # http_method_names = ['patch', 'get', ]
+    # lookup_field = 'username'
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(request.user)
+        return Response(data=serializer.data)
 
     def get_object(self):
-        print(self.request.user)
+        # queryset = self.filter_queryset(self.get_queryset())
+        # make sure to catch 404's below
         user = get_object_or_404(CustomUser, username=self.request.user)
-        print(user)
+        self.check_object_permissions(self.request, user)
         return user
+
+    def patch(self, request):
+        upd_user = self.get_object()
+        serializer = UsersSerializer(upd_user, data=request.data, partial=True)
+        # set partial=True to update a data partially
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(
+                status=HTTP_200_OK,
+                data=serializer.data
+            )
+        return JsonResponse(
+            status=HTTP_400_BAD_REQUEST,
+            data='wrong parameters'
+        )
 
 
 class CurrentUserViewSet(viewsets.ModelViewSet):
@@ -88,7 +113,6 @@ class UserKeyView(TokenObtainPairView):
             print(f"Unexpected {err=}, {type(err)=}")
             return Response(status=HTTP_404_NOT_FOUND)
             # return JsonResponse()
-
 
 
 # admin

@@ -30,7 +30,8 @@ router.register(
 
 urlpatterns = [
     path(
-        'api/v1/users/me/',
+        # r'^api/v1/users/me$',
+        r'api/v1/users/me/',
         CurrentUserDetailView.as_view(),
         name='CurrentUserDetailView'
     ),
