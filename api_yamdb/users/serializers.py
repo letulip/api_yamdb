@@ -25,12 +25,12 @@ class UsersSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value: str) -> str:
         """
-        Hash value passed by user.
-
-        :param value: password of a user
-        :return: a hashed version of the password
+        Захешировать пустой пароль.
         """
         return make_password(value)
+
+    # def validate_username(self, value: str) -> bool:
+    #     return value != 'me'
 
     def create(self, validated_data):
         new_user = CustomUser.objects.create(**validated_data)

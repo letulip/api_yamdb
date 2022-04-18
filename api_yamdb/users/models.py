@@ -20,6 +20,10 @@ class CustomUser(AbstractUser):
                 message="""This value may contain only letters,
                 digits and @/./+/-/_ characters."""
             ),
+            RegexValidator(
+                regex=r'/\bme\b|\bMe\b/gm',
+                message="""You can't create Me username."""
+            ),
         ],
     )
     first_name = models.CharField(
