@@ -20,6 +20,11 @@ class CustomUser(AbstractUser):
                 message="""This value may contain only letters,
                 digits and @/./+/-/_ characters."""
             ),
+            RegexValidator(
+                regex=r'^\b(m|M)e\b',
+                inverse_match=True,
+                message="""Username Me registration not allowed."""
+            )
         ],
     )
     first_name = models.CharField(
@@ -36,7 +41,8 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True
     )
-    role = models.PositiveSmallIntegerField(
+    role = models.CharField(
+        max_length=100,
         choices=ROLE_CHOICES,
         blank=True,
         null=True,

@@ -1,14 +1,35 @@
 # from django.core.mail import send_mail
 # from django.contrib.auth.tokens import PasswordResetTokenGenerator
-# from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.response import Response
+from django.http import JsonResponse
+from rest_framework.status import HTTP_200_OK
 # from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
 from .tokens import get_check_hash
+from api_yamdb.settings import USER, MODERATOR, ADMIN, ROLE_CHOICES
+
+
+# class CurrentUserSerializer(serializers.ModelSerializer):
+    
+#     class Meta():
+#         fields = (
+#             'email',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'bio',
+#             'role'
+#         )
+#         model = CustomUser
+
+#     def get()
+
 
 class UsersSerializer(serializers.ModelSerializer):
 
@@ -25,12 +46,12 @@ class UsersSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value: str) -> str:
         """
-        Hash value passed by user.
-
-        :param value: password of a user
-        :return: a hashed version of the password
+        Захешировать пустой пароль.
         """
         return make_password(value)
+
+    # def validate_username(self, value: str) -> bool:
+    #     return value != 'me'
 
     def create(self, validated_data):
         new_user = CustomUser.objects.create(**validated_data)
@@ -51,7 +72,10 @@ class UsersSerializer(serializers.ModelSerializer):
             f'Your confirmation code: {code}.',
         )
         print(code)
-        return new_user
+        # return Response(data=new_user, status=HTTP_200_OK)
+        # return new_user
+        return get_object_or_404(CustomUser, username=username)
+        # return JsonResponse()
 
 
 class UserKeySerializer(TokenObtainPairSerializer):

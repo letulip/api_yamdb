@@ -12,7 +12,10 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return obj.author == request.user or request.user.role != USER
+        return request.user.role != USER
+
+
+# IsSuperUser TODO
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -25,7 +28,7 @@ class IsAdminOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return obj.author == request.user or request.user.role == ADMIN
+        return request.user.role == ADMIN
 
 
 class IsModerOrReadOnly(BasePermission):
@@ -38,4 +41,4 @@ class IsModerOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return obj.author == request.user or request.user.role == MODERATOR
+        return request.user.role == MODERATOR

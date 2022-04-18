@@ -113,7 +113,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -123,14 +123,14 @@ REST_FRAMEWORK = {
 }
 
 
-USER = 1
-MODERATOR = 2
-ADMIN = 3
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
 
 ROLE_CHOICES = (
-    (USER, 'User'),
-    (MODERATOR, 'Moderator'),
-    (ADMIN, 'Admin')
+    (USER, 'user'),
+    (MODERATOR, 'moderator'),
+    (ADMIN, 'admin')
 )
 
 SIMPLE_JWT = {
