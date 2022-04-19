@@ -100,7 +100,11 @@ class UserKeyView(TokenObtainPairView):
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
                 refresh = RefreshToken.for_user(user)
-                return Response(data=refresh, status=HTTP_200_OK)
+                token = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+                return Response(data=token, status=HTTP_200_OK)
             data = {
                 'confirmation_code': 'Unexeptable',
             }
