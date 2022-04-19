@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -72,15 +73,15 @@ class UserAuthView(APIView):
                 # new_user = CustomUser.objects.create(user)
                 new_user = get_object_or_404(CustomUser, username=username)
                 code = get_check_hash.make_token(new_user)
-                # send_mail(
-                #     from_email='from@example.com',
-                #     subject=f'Hello, {username} Confirm your email',
-                #     message=f'Your confirmation code: {code}.',
-                #     recipient_list=[
-                #         email,
-                #     ],
-                #     fail_silently=False,
-                # )
+                send_mail(
+                    from_email='from@example.com',
+                    subject=f'Hello, {username} Confirm your email',
+                    message=f'Your confirmation code: {code}.',
+                    recipient_list=[
+                        email,
+                    ],
+                    fail_silently=False,
+                )
                 print(code)
                 return Response(data=serializer.data, status=HTTP_200_OK)
             return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
