@@ -19,7 +19,6 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
 
 
 class IsAdminOrReadOnly(BasePermission):
-
     def has_permission(self, request, view):
         if not request.user.is_anonymous:
             return request.user.role == ADMIN
@@ -32,7 +31,6 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class IsModerOrReadOnly(BasePermission):
-
     def has_permission(self, request, view):
         if not request.user.is_anonymous:
             return request.user.role == MODERATOR
