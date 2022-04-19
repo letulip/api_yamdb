@@ -69,8 +69,6 @@ class UserAuthView(APIView):
             serializer = UserCreateSerializer(data=self.request.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-
-                # new_user = CustomUser.objects.create(user)
                 new_user = get_object_or_404(CustomUser, username=username)
                 code = get_check_hash.make_token(new_user)
                 send_mail(
@@ -82,7 +80,6 @@ class UserAuthView(APIView):
                     ],
                     fail_silently=False,
                 )
-                print(code)
                 return Response(data=serializer.data, status=HTTP_200_OK)
             return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
@@ -94,29 +91,26 @@ class UserKeyView(TokenObtainPairView):
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
-        print(request.data)
         if not request.data or 'username' not in request.data:
-            print("we have no data")
             return Response(status=HTTP_400_BAD_REQUEST)
 
         try:
             username = request.data['username']
-            print(username)
             user = get_object_or_404(CustomUser, username=username)
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
                 refresh = RefreshToken.for_user(user)
-                return Response(data=refresh, status=HTTP_200_OK)
+                token = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+                return Response(data=token, status=HTTP_200_OK)
             data = {
                 'confirmation_code': 'Unexeptable',
             }
             return Response(data=data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
-            print(f"Unexpected {err=}, {type(err)=}")
-            error = {
-                'error': f'{err}'
-            }
-            return Response(data=error, status=HTTP_404_NOT_FOUND)
+            return Response(data=err.args[0], status=HTTP_404_NOT_FOUND)
 
 
 # admin
