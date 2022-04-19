@@ -1,7 +1,5 @@
-import json
-from django.http import HttpRequest, JsonResponse, HttpResponse
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -9,63 +7,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework.generics import GenericAPIView
 
 from .models import CustomUser
-from .serializers import UsersSerializer, UserKeySerializer
+from .serializers import UsersSerializer, UserKeySerializer, UserSelfSerializer, UserCreateSerializer
 from .pagination import CustomPagination
 from .tokens import get_check_hash
-from api.permissions import (
-    IsOwnerModerAdminOrReadOnly,
-    IsAdminOrReadOnly
-)
-
-
-class CurrentUserDetailView(GenericAPIView):
-    queryset = CustomUser.objects.all()
-    permission_classes = (IsAuthenticated,)
-    serializer_class = UsersSerializer
-    # http_method_names = ['patch', 'get', ]
-    # lookup_field = 'username'
-
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(request.user)
-        return Response(data=serializer.data)
-
-    def get_object(self):
-        # queryset = self.filter_queryset(self.get_queryset())
-        # make sure to catch 404's below
-        user = get_object_or_404(CustomUser, username=self.request.user)
-        self.check_object_permissions(self.request, user)
-        return user
-
-    def patch(self, request):
-        upd_user = self.get_object()
-        serializer = UsersSerializer(upd_user, data=request.data, partial=True)
-        # set partial=True to update a data partially
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(
-                status=HTTP_200_OK,
-                data=serializer.data
-            )
-        return JsonResponse(
-            status=HTTP_400_BAD_REQUEST,
-            data='wrong parameters'
-        )
-
-
-class CurrentUserViewSet(viewsets.ModelViewSet):
-    serializer_class = UsersSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = None
-    lookup_field = 'username'
-    # http_method_names = ['patch', 'get', ]
-
-    def get_queryset(self):
-        return CustomUser.objects.filter(username=self.request.user)
-        return get_object_or_404(CustomUser, username=self.request.user)
+from api.permissions import IsAdminOrReadOnly
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -80,11 +29,63 @@ class UsersViewSet(viewsets.ModelViewSet):
     )
     lookup_field = 'username'
 
+    @action(
+        methods=['get', 'patch'],
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+        url_path='me',
+    )
+    def get_account_information(self, request):
+        try:
+            user = CustomUser.objects.get(username=request.user)
+        except CustomUser.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
 
-class UserAuthViewSet(viewsets.ModelViewSet):
+        if request.method == 'GET':
+            serializer = UsersSerializer(user)
+            return Response(serializer.data)
+
+        elif request.method == 'PATCH':
+            if request.user.role == 'admin':
+                serializer = UsersSerializer(user, data=request.data)
+            else:
+                serializer = UserSelfSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data, status=HTTP_200_OK)
+
+
+class UserAuthView(APIView):
     queryset = CustomUser.objects.all()
-    serializer_class = UsersSerializer
+    serializer_class = UserCreateSerializer
     http_method_names = ['post', ]
+
+    def post(self, validated_data):
+        try:
+            username = self.request.data['username']
+            email = self.request.data['email']
+
+            serializer = UserCreateSerializer(data=self.request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+
+                # new_user = CustomUser.objects.create(user)
+                new_user = get_object_or_404(CustomUser, username=username)
+                code = get_check_hash.make_token(new_user)
+                # send_mail(
+                #     from_email='from@example.com',
+                #     subject=f'Hello, {username} Confirm your email',
+                #     message=f'Your confirmation code: {code}.',
+                #     recipient_list=[
+                #         email,
+                #     ],
+                #     fail_silently=False,
+                # )
+                print(code)
+                return Response(data=serializer.data, status=HTTP_200_OK)
+            return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
+        except BaseException as err:
+            return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
 
 
 class UserKeyView(TokenObtainPairView):
@@ -92,27 +93,29 @@ class UserKeyView(TokenObtainPairView):
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
+        print(request.data)
+        if not request.data or 'username' not in request.data:
+            print("we have no data")
+            return Response(status=HTTP_400_BAD_REQUEST)
+
         try:
             username = request.data['username']
+            print(username)
             user = get_object_or_404(CustomUser, username=username)
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
                 refresh = RefreshToken.for_user(user)
-                return JsonResponse(
-                    {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-                )
-            return JsonResponse(
-                {
-                    'confirmation_code': 'Unexeptable',
-                }
-            )
+                return Response(data=refresh, status=HTTP_200_OK)
+            data = {
+                'confirmation_code': 'Unexeptable',
+            }
+            return Response(data=data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
-            return Response(status=HTTP_404_NOT_FOUND)
-            # return JsonResponse()
+            error = {
+                'error': f'{err}'
+            }
+            return Response(data=error, status=HTTP_404_NOT_FOUND)
 
 
 # admin
@@ -121,6 +124,14 @@ class UserKeyView(TokenObtainPairView):
 # tulip
 # 601-c5126a7b0b34aef7ce17
 # {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM3MzU1NywiaWF0IjoxNjUwMjg3MTU3LCJqdGkiOiJjNWUyNmIxM2QzZTc0OGQ3ODBmMmQ5NTAxOTliMjlkYSIsInVzZXJfaWQiOjN9.Cs_p5ka57vMda1UOtp18-WOQkAMvSy5RJp-ReXmKaLw",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzczNTU3LCJpYXQiOjE2NTAyODcxNTcsImp0aSI6ImM0ZDczMDZlNTNmZDQxODBiNDQyZGQ2OTA1ZDVmYWE1IiwidXNlcl9pZCI6M30.jgC2V6f3_LTmqLAhtjLmuM64bKWrBWuE6YbLkQmcMrw"
+#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDQ0ODY4MCwiaWF0IjoxNjUwMzYyMjgwLCJqdGkiOiI5YjBhYjRjOGVjNTg0MGJlYTBjYjU1MDdlMTE3Y2VhYyIsInVzZXJfaWQiOjN9.o5SyNTvbPQKPJaI2bflNljV-pY9fW87xaiS_0I_Aqdw",
+    # "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwNDQ4NjgwLCJpYXQiOjE2NTAzNjIyODAsImp0aSI6IjJlZjBlNTljZjI4MTQ0ZWE4NGVmNWE0YTczNzQ3NTk5IiwidXNlcl9pZCI6M30.RwRH8fvbi61FDaYcZJjexF-7skZXvgQgYNZh9eH8vJA"
+# }
+
+
+# somenewuser
+# 601-4248fe442dc514c3cb17
+# {
+#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM4OTczNywiaWF0IjoxNjUwMzAzMzM3LCJqdGkiOiJmYmIxNDNmMTk0MTc0MWY3YmFmOTY2ZTdiOWIzZTVkYSIsInVzZXJfaWQiOjV9.C4tkYZqcy4fy1gv260PsIxzGG-jps99B34YuccnKP74",
+#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzg5NzM3LCJpYXQiOjE2NTAzMDMzMzcsImp0aSI6ImZiZTNhMDgwODk2MDQ3YzViYzYzYTQ1NDA3NWE5ODg4IiwidXNlcl9pZCI6NX0.vX_nr-oidSM2rWkapEgg7f_oHo0t_4t-Z0GZ6919YRY"
 # }
