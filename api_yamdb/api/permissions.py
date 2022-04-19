@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAdminUser
 
 from api_yamdb.settings import USER, MODERATOR, ADMIN
 
@@ -18,12 +18,14 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
 # IsSuperUser TODO
 
 
-class IsAdminOrReadOnly(BasePermission):
+class IsAdminOrReadOnly(IsAdminUser):
 
     def has_permission(self, request, view):
         if not request.user.is_anonymous:
             return request.user.role == ADMIN
         return False
+        # is_admin = super().has_permission(request, view)
+        # return request.method in SAFE_METHODS or is_admin
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
