@@ -1,6 +1,5 @@
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -56,47 +55,8 @@ class UsersViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=HTTP_200_OK)
 
 
-class UserAuthViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = UsersSerializer
-    http_method_names = ['post', ]
-
-    def perform_create(self, serializer):
-        print('we can create here ad well')
-        # new_user = CustomUser.objects.create(**validated_data)
-        username = self.request.data['username']
-        email = self.request.data['email']
-        print(self.request.user)
-        # serializer.save(user=self.request.user)
-        new_user = CustomUser.objects.create(username=username, email=email)
-        print(new_user)
-        code = get_check_hash.make_token(new_user)
-        # send_mail(
-        #     from_email='from@example.com',
-        #     subject=f'Hello, {username} Confirm your email',
-        #     message=f'Your confirmation code: {code}.',
-        #     recipient_list=[
-        #         email,
-        #     ],
-        #     fail_silently=False,
-        # )
-        message = (
-            f'Hello, {username} Confirm your email {email}',
-            f'Your confirmation code: {code}.',
-        )
-        print(code)
-        return get_object_or_404(CustomUser, username=username)
-        # return new_user
-        # user = get_object_or_404(CustomUser, username=username)
-        response = Response(data=new_user, status=HTTP_200_OK)
-        print(response.__dict__)
-        return response
-        return Response(data=new_user, status=HTTP_200_OK)
-
-
 class UserAuthView(APIView):
     queryset = CustomUser.objects.all()
-    # serializer_class = UsersSerializer
     serializer_class = UserCreateSerializer
     http_method_names = ['post', ]
 

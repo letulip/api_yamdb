@@ -4,7 +4,6 @@ from rest_framework import routers
 
 from .views import (
     UsersViewSet,
-    UserAuthViewSet,
     UserKeyView,
     UserAuthView
 )
@@ -17,11 +16,6 @@ router.register(
     UsersViewSet,
     basename='UsersViewSet'
 )
-# router.register(
-#     r'auth/signup',
-#     UserAuthViewSet,
-#     basename='UsersAuth'
-# )
 
 urlpatterns = [
     path(

@@ -1,15 +1,10 @@
-# from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK
 
 from .models import CustomUser
-from .tokens import get_check_hash
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
