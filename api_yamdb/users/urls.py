@@ -17,18 +17,18 @@ router.register(
     UsersViewSet,
     basename='UsersViewSet'
 )
-router.register(
-    r'auth/signup',
-    UserAuthViewSet,
-    basename='UsersAuth'
-)
+# router.register(
+#     r'auth/signup',
+#     UserAuthViewSet,
+#     basename='UsersAuth'
+# )
 
 urlpatterns = [
-    # path(
-    #     'api/v1/auth/signup/',
-    #     UserAuthView.as_view(),
-    #     name='register_user'
-    # ),
+    path(
+        'api/v1/auth/signup/',
+        UserAuthView.as_view(),
+        name='register_user'
+    ),
     path(
         'api/v1/auth/token/',
         UserKeyView.as_view(),

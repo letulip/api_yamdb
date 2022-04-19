@@ -1,5 +1,6 @@
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -11,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 
 from .models import CustomUser
-from .serializers import UsersSerializer, UserKeySerializer, UserSelfSerializer
+from .serializers import UsersSerializer, UserKeySerializer, UserSelfSerializer, UserCreateSerializer
 from .pagination import CustomPagination
 from .tokens import get_check_hash
 from api.permissions import IsAdminOrReadOnly
@@ -60,10 +61,15 @@ class UserAuthViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     http_method_names = ['post', ]
 
-    def post(self, validated_data):
-        new_user = CustomUser.objects.create(**validated_data)
-        username = validated_data.pop('username')
-        email = validated_data.pop('email')
+    def perform_create(self, serializer):
+        print('we can create here ad well')
+        # new_user = CustomUser.objects.create(**validated_data)
+        username = self.request.data['username']
+        email = self.request.data['email']
+        print(self.request.user)
+        # serializer.save(user=self.request.user)
+        new_user = CustomUser.objects.create(username=username, email=email)
+        print(new_user)
         code = get_check_hash.make_token(new_user)
         # send_mail(
         #     from_email='from@example.com',
@@ -79,53 +85,47 @@ class UserAuthViewSet(viewsets.ModelViewSet):
             f'Your confirmation code: {code}.',
         )
         print(code)
-        # return get_object_or_404(CustomUser, username=username)
-        user = get_object_or_404(CustomUser, username=username)
-        return Response(data=user, status=HTTP_200_OK)
+        return get_object_or_404(CustomUser, username=username)
+        # return new_user
+        # user = get_object_or_404(CustomUser, username=username)
+        response = Response(data=new_user, status=HTTP_200_OK)
+        print(response.__dict__)
+        return response
+        return Response(data=new_user, status=HTTP_200_OK)
 
 
 class UserAuthView(APIView):
     queryset = CustomUser.objects.all()
-    serializer_class = UsersSerializer
+    # serializer_class = UsersSerializer
+    serializer_class = UserCreateSerializer
     http_method_names = ['post', ]
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
-
     def post(self, validated_data):
-        print(self.__dict__)
         try:
             username = self.request.data['username']
             email = self.request.data['email']
-            new_user = CustomUser.objects.create(username=username, email=email)
-            code = get_check_hash.make_token(new_user)
-            # send_mail(
-            #     from_email='from@example.com',
-            #     subject=f'Hello, {username} Confirm your email',
-            #     message=f'Your confirmation code: {code}.',
-            #     recipient_list=[
-            #         email,
-            #     ],
-            #     fail_silently=False,
-            # )
-            message = (
-                f'Hello, {username} Confirm your email {email}',
-                f'Your confirmation code: {code}.',
-            )
-            print(code)
-            user = get_object_or_404(CustomUser, username=username)
 
-            serializer = UserSelfSerializer(user, data=self.request.data)
-            if serializer.is_valid():
-            #   serializer.save()
+            serializer = UserCreateSerializer(data=self.request.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+
+                # new_user = CustomUser.objects.create(user)
+                new_user = get_object_or_404(CustomUser, username=username)
+                code = get_check_hash.make_token(new_user)
+                # send_mail(
+                #     from_email='from@example.com',
+                #     subject=f'Hello, {username} Confirm your email',
+                #     message=f'Your confirmation code: {code}.',
+                #     recipient_list=[
+                #         email,
+                #     ],
+                #     fail_silently=False,
+                # )
+                print(code)
                 return Response(data=serializer.data, status=HTTP_200_OK)
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
-            print(f"Unexpected {err=}, {type(err)=}")
-            error = {
-                'error': f'{err}'
-            }
-            return Response(data=error, status=HTTP_400_BAD_REQUEST)
+            return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
 
 
 class UserKeyView(TokenObtainPairView):
@@ -145,18 +145,11 @@ class UserKeyView(TokenObtainPairView):
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
                 refresh = RefreshToken.for_user(user)
-                return JsonResponse(
-                    {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }
-                )
-            return JsonResponse(
-                status=HTTP_400_BAD_REQUEST,
-                data={
-                    'confirmation_code': 'Unexeptable',
-                }
-            )
+                return Response(data=refresh, status=HTTP_200_OK)
+            data = {
+                'confirmation_code': 'Unexeptable',
+            }
+            return Response(data=data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
             error = {

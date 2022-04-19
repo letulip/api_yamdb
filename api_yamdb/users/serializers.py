@@ -1,7 +1,7 @@
 # from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
-from pkg_resources import require
+from django.core.validators import RegexValidator
 
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -10,6 +10,16 @@ from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK
 
 from .models import CustomUser
 from .tokens import get_check_hash
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+
+    class Meta():
+        fields = (
+            'email',
+            'username',
+        )
+        model = CustomUser
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -32,6 +42,7 @@ class UsersSerializer(serializers.ModelSerializer):
         return make_password(value)
 
     # def create(self, validated_data):
+    #     print('we can create')
     #     new_user = CustomUser.objects.create(**validated_data)
     #     username = validated_data.pop('username')
     #     email = validated_data.pop('email')
@@ -51,13 +62,35 @@ class UsersSerializer(serializers.ModelSerializer):
     #     )
     #     print(code)
     #     return get_object_or_404(CustomUser, username=username)
+    #     # return new_user
     #     # user = get_object_or_404(CustomUser, username=username)
-    #     # return Response(data=user, status=HTTP_200_OK)
+    #     response = Response(data=new_user, status=HTTP_200_OK)
+    #     print(response.__dict__)
+    #     return response
+    #     return Response(data=new_user, status=HTTP_200_OK)
 
 
 class UserSelfSerializer(UsersSerializer):
-    username = serializers.CharField(required=False)
-    email = serializers.CharField(required=False)
+    username = serializers.CharField(
+        max_length=150,
+        required=False,
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',
+                message="""This value may contain only letters,
+                digits and @/./+/-/_ characters."""
+            ),
+            RegexValidator(
+                regex=r'^\b(m|M)e\b',
+                inverse_match=True,
+                message="""Username Me registration not allowed."""
+            )
+        ],
+    )
+    email = serializers.EmailField(
+        required=False,
+        max_length=255
+    )
     role = serializers.CharField(read_only=True)
 
 
