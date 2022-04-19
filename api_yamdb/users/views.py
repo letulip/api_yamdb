@@ -5,9 +5,10 @@ from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK
+from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 
 from .models import CustomUser
 from .serializers import UsersSerializer, UserKeySerializer, UserSelfSerializer
@@ -59,14 +60,87 @@ class UserAuthViewSet(viewsets.ModelViewSet):
     serializer_class = UsersSerializer
     http_method_names = ['post', ]
 
+    def post(self, validated_data):
+        new_user = CustomUser.objects.create(**validated_data)
+        username = validated_data.pop('username')
+        email = validated_data.pop('email')
+        code = get_check_hash.make_token(new_user)
+        # send_mail(
+        #     from_email='from@example.com',
+        #     subject=f'Hello, {username} Confirm your email',
+        #     message=f'Your confirmation code: {code}.',
+        #     recipient_list=[
+        #         email,
+        #     ],
+        #     fail_silently=False,
+        # )
+        message = (
+            f'Hello, {username} Confirm your email {email}',
+            f'Your confirmation code: {code}.',
+        )
+        print(code)
+        # return get_object_or_404(CustomUser, username=username)
+        user = get_object_or_404(CustomUser, username=username)
+        return Response(data=user, status=HTTP_200_OK)
+
+
+class UserAuthView(APIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UsersSerializer
+    http_method_names = ['post', ]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def post(self, validated_data):
+        print(self.__dict__)
+        try:
+            username = self.request.data['username']
+            email = self.request.data['email']
+            new_user = CustomUser.objects.create(username=username, email=email)
+            code = get_check_hash.make_token(new_user)
+            # send_mail(
+            #     from_email='from@example.com',
+            #     subject=f'Hello, {username} Confirm your email',
+            #     message=f'Your confirmation code: {code}.',
+            #     recipient_list=[
+            #         email,
+            #     ],
+            #     fail_silently=False,
+            # )
+            message = (
+                f'Hello, {username} Confirm your email {email}',
+                f'Your confirmation code: {code}.',
+            )
+            print(code)
+            user = get_object_or_404(CustomUser, username=username)
+
+            serializer = UserSelfSerializer(user, data=self.request.data)
+            if serializer.is_valid():
+            #   serializer.save()
+                return Response(data=serializer.data, status=HTTP_200_OK)
+            return Response(status=HTTP_400_BAD_REQUEST)
+        except BaseException as err:
+            print(f"Unexpected {err=}, {type(err)=}")
+            error = {
+                'error': f'{err}'
+            }
+            return Response(data=error, status=HTTP_400_BAD_REQUEST)
+
 
 class UserKeyView(TokenObtainPairView):
     queryset = CustomUser.objects.all()
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
+        print(request.data)
+        if not request.data or 'username' not in request.data:
+            print("we have no data")
+            return Response(status=HTTP_400_BAD_REQUEST)
+
         try:
             username = request.data['username']
+            print(username)
             user = get_object_or_404(CustomUser, username=username)
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
@@ -78,13 +152,17 @@ class UserKeyView(TokenObtainPairView):
                     }
                 )
             return JsonResponse(
-                {
+                status=HTTP_400_BAD_REQUEST,
+                data={
                     'confirmation_code': 'Unexeptable',
                 }
             )
         except BaseException as err:
             print(f"Unexpected {err=}, {type(err)=}")
-            return Response(status=HTTP_404_NOT_FOUND)
+            error = {
+                'error': f'{err}'
+            }
+            return Response(data=error, status=HTTP_404_NOT_FOUND)
 
 
 # admin
@@ -93,8 +171,8 @@ class UserKeyView(TokenObtainPairView):
 # tulip
 # 601-c5126a7b0b34aef7ce17
 # {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM3MzU1NywiaWF0IjoxNjUwMjg3MTU3LCJqdGkiOiJjNWUyNmIxM2QzZTc0OGQ3ODBmMmQ5NTAxOTliMjlkYSIsInVzZXJfaWQiOjN9.Cs_p5ka57vMda1UOtp18-WOQkAMvSy5RJp-ReXmKaLw",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzczNTU3LCJpYXQiOjE2NTAyODcxNTcsImp0aSI6ImM0ZDczMDZlNTNmZDQxODBiNDQyZGQ2OTA1ZDVmYWE1IiwidXNlcl9pZCI6M30.jgC2V6f3_LTmqLAhtjLmuM64bKWrBWuE6YbLkQmcMrw"
+#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDQ0ODY4MCwiaWF0IjoxNjUwMzYyMjgwLCJqdGkiOiI5YjBhYjRjOGVjNTg0MGJlYTBjYjU1MDdlMTE3Y2VhYyIsInVzZXJfaWQiOjN9.o5SyNTvbPQKPJaI2bflNljV-pY9fW87xaiS_0I_Aqdw",
+    # "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwNDQ4NjgwLCJpYXQiOjE2NTAzNjIyODAsImp0aSI6IjJlZjBlNTljZjI4MTQ0ZWE4NGVmNWE0YTczNzQ3NTk5IiwidXNlcl9pZCI6M30.RwRH8fvbi61FDaYcZJjexF-7skZXvgQgYNZh9eH8vJA"
 # }
 
 

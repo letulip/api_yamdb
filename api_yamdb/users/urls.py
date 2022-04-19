@@ -5,7 +5,8 @@ from rest_framework import routers
 from .views import (
     UsersViewSet,
     UserAuthViewSet,
-    UserKeyView
+    UserKeyView,
+    UserAuthView
 )
 
 app_name = 'users'
@@ -23,10 +24,15 @@ router.register(
 )
 
 urlpatterns = [
-    path('api/v1/', include(router.urls)),
+    # path(
+    #     'api/v1/auth/signup/',
+    #     UserAuthView.as_view(),
+    #     name='register_user'
+    # ),
     path(
         'api/v1/auth/token/',
         UserKeyView.as_view(),
         name='token_obtain_pair'
-    )
+    ),
+    path('api/v1/', include(router.urls)),
 ]
