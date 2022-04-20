@@ -2,27 +2,37 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 
-from rest_framework import viewsets, filters
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import SearchFilter
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import (
+    HTTP_404_NOT_FOUND,
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
 from .models import CustomUser
-from .serializers import UsersSerializer, UserKeySerializer, UserSelfSerializer, UserCreateSerializer
+from .serializers import (
+    UsersSerializer,
+    UserKeySerializer,
+    UserSelfSerializer,
+    UserCreateSerializer
+)
 from .pagination import CustomPagination
 from .tokens import get_check_hash
 from api.permissions import IsAdminOrReadOnly
 
 
-class UsersViewSet(viewsets.ModelViewSet):
+class UsersViewSet(ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UsersSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (SearchFilter,)
     pagination_class = CustomPagination
     search_fields = (
         '^username',
@@ -61,8 +71,8 @@ class UserAuthView(APIView):
     serializer_class = UserCreateSerializer
     http_method_names = ['post', ]
 
-    def post(self, validated_data):
-        if not self.request.data:
+    def post(self, request: HttpRequest):
+        if not request.data:
             resp_obj = {
                 "email": [
                     "This field is required."
@@ -74,10 +84,10 @@ class UserAuthView(APIView):
             return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
         else:
             try:
-                username = self.request.data['username']
-                email = self.request.data['email']
+                username = request.data['username']
+                email = request.data['email']
 
-                serializer = UserCreateSerializer(data=self.request.data)
+                serializer = UserCreateSerializer(data=request.data)
                 if serializer.is_valid(raise_exception=True):
                     serializer.save()
                     new_user = get_object_or_404(CustomUser, username=username)
@@ -92,7 +102,10 @@ class UserAuthView(APIView):
                         fail_silently=False,
                     )
                     return Response(data=serializer.data, status=HTTP_200_OK)
-                return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
+                return Response(
+                    data=serializer.data,
+                    status=HTTP_400_BAD_REQUEST
+                )
             except BaseException as err:
                 return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
 
@@ -122,22 +135,3 @@ class UserKeyView(TokenObtainPairView):
             return Response(data=data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
             return Response(data=err.args[0], status=HTTP_404_NOT_FOUND)
-
-
-# admin
-
-
-# tulip
-# 601-c5126a7b0b34aef7ce17
-# {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDQ0ODY4MCwiaWF0IjoxNjUwMzYyMjgwLCJqdGkiOiI5YjBhYjRjOGVjNTg0MGJlYTBjYjU1MDdlMTE3Y2VhYyIsInVzZXJfaWQiOjN9.o5SyNTvbPQKPJaI2bflNljV-pY9fW87xaiS_0I_Aqdw",
-    # "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwNDQ4NjgwLCJpYXQiOjE2NTAzNjIyODAsImp0aSI6IjJlZjBlNTljZjI4MTQ0ZWE4NGVmNWE0YTczNzQ3NTk5IiwidXNlcl9pZCI6M30.RwRH8fvbi61FDaYcZJjexF-7skZXvgQgYNZh9eH8vJA"
-# }
-
-
-# somenewuser
-# 601-4248fe442dc514c3cb17
-# {
-#     "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY1MDM4OTczNywiaWF0IjoxNjUwMzAzMzM3LCJqdGkiOiJmYmIxNDNmMTk0MTc0MWY3YmFmOTY2ZTdiOWIzZTVkYSIsInVzZXJfaWQiOjV9.C4tkYZqcy4fy1gv260PsIxzGG-jps99B34YuccnKP74",
-#     "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwMzg5NzM3LCJpYXQiOjE2NTAzMDMzMzcsImp0aSI6ImZiZTNhMDgwODk2MDQ3YzViYzYzYTQ1NDA3NWE5ODg4IiwidXNlcl9pZCI6NX0.vX_nr-oidSM2rWkapEgg7f_oHo0t_4t-Z0GZ6919YRY"
-# }
