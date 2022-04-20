@@ -1,5 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .mixins import ModelMixinSet
@@ -17,7 +19,7 @@ from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly
 
 class CategoryViewSet(ModelMixinSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Category.objects.all()
@@ -30,7 +32,7 @@ class CategoryViewSet(ModelMixinSet):
 
 class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Genre.objects.all()
@@ -42,10 +44,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    permission_classes = [
-        IsAdminOrReadOnly,
-        IsAuthenticatedOrReadOnly,
-    ]
+    permission_classes = [IsAuthenticatedOrReadOnly,]
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -53,12 +52,31 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (IsOwnerModerAdminOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        new_queryset = Review.objects.filter(title_id=title_id)
+        return new_queryset
+
+    # Так работает но возвращает код 201 вместо 400
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        # instance = Review.objects.filter(
+        #     author=self.request.user,
+        #     title_id=self.kwargs.get('title_id')
+        # )
+        # if not instance.exists():
+        if serializer.is_valid():
+            serializer.save(
+                author=self.request.user,
+                title_id=self.kwargs.get('title_id')
+            )
+        # else: 
+        #     return Response(
+        #         data=serializer.data,
+        #         status=HTTP_400_BAD_REQUEST
+        #     )
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -66,8 +84,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
 
     def get_queryset(self):
-        comment_id = self.kwargs.get("comment_id")
-        new_queryset = Comment.objects.filter(id=comment_id)
+        review_id = self.kwargs.get("review_id")
+        new_queryset = Comment.objects.filter(id=review_id)
         return new_queryset
 
     def perform_create(self, serializer):
