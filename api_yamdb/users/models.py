@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
+from django.core.exceptions import ValidationError
 
 from api_yamdb.settings import USER, ROLE_CHOICES
+
 
 class CustomUser(AbstractUser):
 
@@ -16,7 +18,7 @@ class CustomUser(AbstractUser):
         unique=True,
         validators=[
             RegexValidator(
-                regex=r'^[\w.@+-]+$',
+                regex=r'^[\w.@+-_]+$',
                 message="""This value may contain only letters,
                 digits and @/./+/-/_ characters."""
             ),
