@@ -62,28 +62,39 @@ class UserAuthView(APIView):
     http_method_names = ['post', ]
 
     def post(self, validated_data):
-        try:
-            username = self.request.data['username']
-            email = self.request.data['email']
+        if not self.request.data:
+            resp_obj = {
+                "email": [
+                    "This field is required."
+                ],
+                "username": [
+                    "This field is required."
+                ]
+            }
+            return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                username = self.request.data['username']
+                email = self.request.data['email']
 
-            serializer = UserCreateSerializer(data=self.request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                new_user = get_object_or_404(CustomUser, username=username)
-                code = get_check_hash.make_token(new_user)
-                send_mail(
-                    from_email='from@example.com',
-                    subject=f'Hello, {username} Confirm your email',
-                    message=f'Your confirmation code: {code}.',
-                    recipient_list=[
-                        email,
-                    ],
-                    fail_silently=False,
-                )
-                return Response(data=serializer.data, status=HTTP_200_OK)
-            return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
-        except BaseException as err:
-            return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
+                serializer = UserCreateSerializer(data=self.request.data)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    new_user = get_object_or_404(CustomUser, username=username)
+                    code = get_check_hash.make_token(new_user)
+                    send_mail(
+                        from_email='from@example.com',
+                        subject=f'Hello, {username} Confirm your email',
+                        message=f'Your confirmation code: {code}.',
+                        recipient_list=[
+                            email,
+                        ],
+                        fail_silently=False,
+                    )
+                    return Response(data=serializer.data, status=HTTP_200_OK)
+                return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
+            except BaseException as err:
+                return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
 
 
 class UserKeyView(TokenObtainPairView):
