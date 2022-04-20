@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 
 from rest_framework import viewsets, filters
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -61,31 +62,39 @@ class UserAuthView(APIView):
     http_method_names = ['post', ]
 
     def post(self, validated_data):
-        try:
-            username = self.request.data['username']
-            email = self.request.data['email']
+        if not self.request.data:
+            resp_obj = {
+                "email": [
+                    "This field is required."
+                ],
+                "username": [
+                    "This field is required."
+                ]
+            }
+            return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                username = self.request.data['username']
+                email = self.request.data['email']
 
-            serializer = UserCreateSerializer(data=self.request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-
-                # new_user = CustomUser.objects.create(user)
-                new_user = get_object_or_404(CustomUser, username=username)
-                code = get_check_hash.make_token(new_user)
-                # send_mail(
-                #     from_email='from@example.com',
-                #     subject=f'Hello, {username} Confirm your email',
-                #     message=f'Your confirmation code: {code}.',
-                #     recipient_list=[
-                #         email,
-                #     ],
-                #     fail_silently=False,
-                # )
-                print(code)
-                return Response(data=serializer.data, status=HTTP_200_OK)
-            return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
-        except BaseException as err:
-            return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
+                serializer = UserCreateSerializer(data=self.request.data)
+                if serializer.is_valid(raise_exception=True):
+                    serializer.save()
+                    new_user = get_object_or_404(CustomUser, username=username)
+                    code = get_check_hash.make_token(new_user)
+                    send_mail(
+                        from_email='from@example.com',
+                        subject=f'Hello, {username} Confirm your email',
+                        message=f'Your confirmation code: {code}.',
+                        recipient_list=[
+                            email,
+                        ],
+                        fail_silently=False,
+                    )
+                    return Response(data=serializer.data, status=HTTP_200_OK)
+                return Response(data=serializer.data, status=HTTP_400_BAD_REQUEST)
+            except BaseException as err:
+                return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
 
 
 class UserKeyView(TokenObtainPairView):
@@ -93,29 +102,26 @@ class UserKeyView(TokenObtainPairView):
     serializer_class = UserKeySerializer
 
     def post(self, request: HttpRequest):
-        print(request.data)
         if not request.data or 'username' not in request.data:
-            print("we have no data")
             return Response(status=HTTP_400_BAD_REQUEST)
 
         try:
             username = request.data['username']
-            print(username)
             user = get_object_or_404(CustomUser, username=username)
             code = request.data['confirmation_code']
             if (get_check_hash.check_token(user=user, token=code)):
                 refresh = RefreshToken.for_user(user)
-                return Response(data=refresh, status=HTTP_200_OK)
+                token = {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }
+                return Response(data=token, status=HTTP_200_OK)
             data = {
                 'confirmation_code': 'Unexeptable',
             }
             return Response(data=data, status=HTTP_400_BAD_REQUEST)
         except BaseException as err:
-            print(f"Unexpected {err=}, {type(err)=}")
-            error = {
-                'error': f'{err}'
-            }
-            return Response(data=error, status=HTTP_404_NOT_FOUND)
+            return Response(data=err.args[0], status=HTTP_404_NOT_FOUND)
 
 
 # admin
