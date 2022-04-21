@@ -83,11 +83,44 @@ class ReviewViewSet(APIView, PageNumberPagination):
         if not request.data or int(request.data['score']) > 10 or int(request.data['score']) == 0:
             return Response(status=HTTP_400_BAD_REQUEST)
         title = get_object_or_404(Title, id=title_id)
-        request.data._mutable = True
+        request.POST._mutable = True
         data = request.data
         data['author'] = request.user.id
         data['title'] = title_id
-        request.data._mutable = False
+        request.POST._mutable = False
+        serializer = ReviewSerializer(data=data)
+        try:
+            if serializer.is_valid():
+                serializer.save(
+                    author=request.user,
+                    title_id=title_id
+                )
+                return Response(data=serializer.data, status=HTTP_201_CREATED)
+        except:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class ReviewSingleView(APIView, PageNumberPagination):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get(self, request, title_id, review_id):
+        reviews = Review.objects.filter(title_id=title_id)
+
+        results = self.paginate_queryset(reviews, request, view=self)
+        serializer = ReviewSerializer(results, many=True)
+        paginated_data = self.get_paginated_response(serializer.data)
+
+        return Response(data=paginated_data.data)
+
+    def post(self, request, title_id):
+        if not request.data or int(request.data['score']) > 10 or int(request.data['score']) == 0:
+            return Response(status=HTTP_400_BAD_REQUEST)
+        title = get_object_or_404(Title, id=title_id)
+        # request.data._mutable = True
+        data = request.data.items()
+        data['author'] = request.user.id
+        data['title'] = title_id
+        # request.data._mutable = False
         serializer = ReviewSerializer(data=data)
         try:
             if serializer.is_valid():
