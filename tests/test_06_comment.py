@@ -2,8 +2,6 @@ import pytest
 
 from .common import auth_client, create_comments, create_reviews
 
-from pprint import pprint
-
 
 class Test06CommentAPI:
 
@@ -92,7 +90,6 @@ class Test06CommentAPI:
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/reviews/{review_id}/comments/` '
             'возвращаете данные с пагинацией. Не найден параметр `results`'
         )
-        pprint(data['results'])
         assert data['count'] == 4, (
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/reviews/{review_id}/comments/` '
             'возвращаете данные с пагинацией. Значение параметра `count` не правильное'
