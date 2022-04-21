@@ -82,7 +82,6 @@ class ReviewViewSet(APIView, PageNumberPagination):
 
     def get(self, request, title_id):
         reviews = Review.objects.filter(title_id=title_id)
-
         results = self.paginate_queryset(reviews, request, view=self)
         serializer = ReviewSerializer(results, many=True)
         paginated_data = self.get_paginated_response(serializer.data)
@@ -139,12 +138,21 @@ class APIReviewDetail(APIView):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsOwnerModerAdminOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         new_queryset = Comment.objects.filter(id=review_id)
+
         return new_queryset
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        title_id = self.kwargs.get('title_id')
+        serializer.save(
+            author=self.request.user,
+            review_id=review_id,
+            #title=title_id,
+        )
