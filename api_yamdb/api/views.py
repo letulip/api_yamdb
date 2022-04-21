@@ -137,10 +137,6 @@ class APIReviewDetail(APIView):
         return Response(status=HTTP_204_NO_CONTENT)
 
 
-class ReviewSingleView(APIView):
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-
-
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
