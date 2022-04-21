@@ -82,7 +82,7 @@ class ReviewViewSet(APIView, PageNumberPagination):
         return Response(data=paginated_data.data)
 
     def post(self, request, title_id):
-        if not request.data or int(request.data['score']) > 10 or int(request.data['score']) == 0:
+        if not request.data or not int(request.data['score']) in range(1, 10):
             return Response(status=HTTP_400_BAD_REQUEST)
         title = get_object_or_404(Title, id=title_id)
         request.POST._mutable = True
