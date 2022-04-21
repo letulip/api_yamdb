@@ -19,14 +19,14 @@ router.register(
 
 urlpatterns = [
     path(
-        'api/v1/auth/signup/',
+        'auth/signup/',
         UserAuthView.as_view(),
         name='register_user'
     ),
     path(
-        'api/v1/auth/token/',
+        'auth/token/',
         UserKeyView.as_view(),
         name='token_obtain_pair'
     ),
-    path('api/v1/', include(router.urls)),
+    path('', include(router.urls)),
 ]

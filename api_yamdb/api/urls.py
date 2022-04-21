@@ -22,21 +22,26 @@ router.register('titles', TitleViewSet)
 #     basename='reviews'
 # )
 router.register(
-    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet,
     basename='comments'
 )
+router.register(
+    'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments/(?P<comment_id>\d+)',
+    CommentViewSet,
+    basename='comment'
+)
 
 urlpatterns = [
-    path('api/v1/', include(router.urls)),
     path(
-        'api/v1/titles/<int:title_id>/reviews/',
+        'titles/<int:title_id>/reviews/',
         ReviewViewSet.as_view(),
         name='reviews'
     ),
     path(
-        'api/v1/titles/<int:title_id>/reviews/<int:review_id>/',
+        'titles/<int:title_id>/reviews/<int:review_id>/',
         APIReviewDetail.as_view(),
         name='review_detail'
-    )
+    ),
+    path('', include(router.urls)),
 ]
