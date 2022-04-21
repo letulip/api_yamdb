@@ -47,10 +47,7 @@ class UsersViewSet(ModelViewSet):
         url_path='me',
     )
     def get_account_information(self, request):
-        try:
-            user = CustomUser.objects.get(username=request.user)
-        except CustomUser.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
+        user = get_object_or_404(CustomUser, username=request.user)
 
         if request.method == 'GET':
             serializer = UsersSerializer(user)
@@ -114,20 +111,17 @@ class UserKeyView(TokenObtainPairView):
         if not request.data or 'username' not in request.data:
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        try:
-            username = request.data['username']
-            user = get_object_or_404(CustomUser, username=username)
-            code = request.data['confirmation_code']
-            if (get_check_hash.check_token(user=user, token=code)):
-                refresh = RefreshToken.for_user(user)
-                token = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
-                return Response(data=token, status=HTTP_200_OK)
-            data = {
-                'confirmation_code': 'Unexeptable',
+        username = request.data['username']
+        user = get_object_or_404(CustomUser, username=username)
+        code = request.data['confirmation_code']
+        if (get_check_hash.check_token(user=user, token=code)):
+            refresh = RefreshToken.for_user(user)
+            token = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
             }
-            return Response(data=data, status=HTTP_400_BAD_REQUEST)
-        except BaseException as err:
-            return Response(data=err.args[0], status=HTTP_404_NOT_FOUND)
+            return Response(data=token, status=HTTP_200_OK)
+        data = {
+            'confirmation_code': 'Unexeptable',
+        }
+        return Response(data=data, status=HTTP_400_BAD_REQUEST)
