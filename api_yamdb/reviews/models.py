@@ -33,10 +33,10 @@ class Title(models.Model):
 
 
 class Rating(models.Model):
-    value = models.PositiveSmallIntegerField(
-        'Рейтинг',
-        default=10
-    )
+   value = models.PositiveSmallIntegerField(
+       'Рейтинг',
+       default=10
+   )
 
 
 class Review(models.Model):
@@ -57,26 +57,33 @@ class Review(models.Model):
         'Текст отзыва',
         help_text='Введите текст отзыва'
     )
-    score = models.ForeignKey(
-        Rating,
+    score = models.PositiveSmallIntegerField(
         choices=CHOICES,
-        help_text='Оцените произведение',
-        related_name='reviews',
-        default=10,
-        on_delete=models.SET_DEFAULT
+        help_text='Оцените произведение'
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='review'
+        # blank=True
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='reviews'
+        # blank=True
     )
     pub_date = models.DateTimeField(
         auto_now_add=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review'
+            )
+        ]
 
 
 class Comment(models.Model):
