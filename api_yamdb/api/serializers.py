@@ -32,8 +32,8 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
-        exclude = ('id',)
-        # fields = '__all__'
+        # exclude = ('id',)
+        fields = '__all__'
         model = Review                 
 
 

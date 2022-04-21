@@ -62,24 +62,23 @@ class Review(models.Model):
     )
     score = models.PositiveSmallIntegerField(
         choices=CHOICES,
-        help_text='Оцените произведение',
+        help_text='Оцените произведение'
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='review',
-        blank=True
+        related_name='review'
+        # blank=True
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE,
-        blank=True
+        on_delete=models.CASCADE
+        # blank=True
     )
     pub_date = models.DateTimeField(
         auto_now_add=True
     )
 
-    # так не работает совсем
     class Meta:
         constraints = [
             models.UniqueConstraint(

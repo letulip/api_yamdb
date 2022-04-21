@@ -1,7 +1,8 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .mixins import ModelMixinSet
@@ -51,32 +52,49 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_fields = ('category', 'genre', 'name', 'year')
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    serializer_class = ReviewSerializer
+class ReviewViewSet(APIView):
+    #queryset = Review.objects.all()
+    #serializer_class = ReviewSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        new_queryset = Review.objects.filter(title_id=title_id)
-        return new_queryset
+    # def get_queryset(self, title_id):
+    #    title_id = self.kwargs.get('title_id')
+    #    queryset = Review.objects.filter(title_id=title_id)
+    #    return queryset
 
-    # Так работает но возвращает код 201 вместо 400
-    def perform_create(self, serializer):
-        # instance = Review.objects.filter(
-        #     author=self.request.user,
-        #     title_id=self.kwargs.get('title_id')
-        # )
-        # if not instance.exists():
-        if serializer.is_valid():
-            serializer.save(
-                author=self.request.user,
-                title_id=self.kwargs.get('title_id')
-            )
-        # else: 
-        #     return Response(
-        #         data=serializer.data,
-        #         status=HTTP_400_BAD_REQUEST
-        #     )
+    def get(self, request, title_id):
+        reviews = Review.objects.filter(title_id=title_id)
+        #reviews = Review.objects.all()
+        serializer = ReviewSerializer(reviews, many=True)
+
+        return Response(serializer.data)
+
+    def post(self, request, title_id):
+#        instance = Review.objects.filter(
+#            author=self.request.user,
+#            title_id=self.kwargs.get('title_id')
+#        )
+#        if not instance.exists():
+#            
+#        else: 
+#            return Response(
+#                data=serializer.data,
+#                status=HTTP_400_BAD_REQUEST
+#            )
+        data = request.data
+        data['author'] = request.user.id
+        data['title'] = title_id
+        serializer = ReviewSerializer(data=data)
+        # breakpoint()
+        try:
+            if serializer.is_valid():
+                serializer.save(
+                    author=request.user,
+                    title_id=title_id
+                )
+                return Response(serializer.data, status=HTTP_201_CREATED)
+        except:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
