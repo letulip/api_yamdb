@@ -30,6 +30,7 @@ from .serializers import (
 from .permissions import (
     IsOwnerModerAdminOrReadOnly,
     IsAdminOrReadOnlyIldar,
+    IsOwnerModerAdminOrReadOnlyKonstantin,
 )
 from api_yamdb.settings import USER
 
@@ -137,7 +138,7 @@ class APIReviewDetail(APIView):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsOwnerModerAdminOrReadOnlyKonstantin,)
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
@@ -153,3 +154,5 @@ class CommentViewSet(ModelViewSet):
             author=self.request.user,
             review=review,
         )
+
+        return Response(serializer.data, status=HTTP_200_OK)
