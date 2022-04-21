@@ -4,7 +4,7 @@ from rest_framework.permissions import (
     IsAdminUser
 )
 
-from api_yamdb.settings import USER, MODERATOR, ADMIN
+from api_yamdb.settings import USER, ADMIN
 
 
 class IsOwnerModerAdminOrReadOnly(BasePermission):
@@ -33,18 +33,6 @@ class IsAdminOrReadOnlyIldar(BasePermission):
             return request.user.is_staff or request.user.role == ADMIN
 
 
-# class IsModerOrReadOnlyIldar(BasePermission):
-#     def has_permission(self, request, view):
-#         if not request.user.is_anonymous:
-#             return request.user.role == MODERATOR
-#         return False
-
-#     def has_object_permission(self, request, view, obj):
-#         if request.method in SAFE_METHODS:
-#             return True
-#         return request.user.role == MODERATOR
-
-
 class IsAdminOrReadOnly(IsAdminUser):
 
     def has_permission(self, request, view):
@@ -56,6 +44,7 @@ class IsAdminOrReadOnly(IsAdminUser):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_staff or request.user.role == ADMIN
+
 
 class IsOwnerModerAdminOrReadOnlyKonstantin(BasePermission):
 
