@@ -105,9 +105,15 @@ class ReviewViewSet(APIView, PageNumberPagination):
                         author=request.user,
                         title_id=title_id
                     )
-                    return Response(data=serializer.data, status=HTTP_201_CREATED)
+                    return Response(
+                        data=serializer.data,
+                        status=HTTP_201_CREATED
+                    )
             except BaseException:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+                return Response(
+                    serializer.errors,
+                    status=HTTP_400_BAD_REQUEST
+                )
 
 
 class APIReviewDetail(APIView):
