@@ -1,31 +1,36 @@
 from django.db.models import Avg
 
-from rest_framework import serializers
+from rest_framework.serializers import (
+    ModelSerializer,
+    SerializerMethodField,
+    StringRelatedField,
+    SlugRelatedField
+)
 
 from reviews.models import Category, Genre, Title, Review, Comment
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(ModelSerializer):
 
     class Meta:
         exclude = ('id',)
         model = Category
 
 
-class GenreSerializer(serializers.ModelSerializer):
+class GenreSerializer(ModelSerializer):
 
     class Meta:
         exclude = ('id',)
         model = Genre
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleSerializer(ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(
         read_only=True,
         many=True
     )
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Title
@@ -46,13 +51,13 @@ class TitleSerializer(serializers.ModelSerializer):
                 return int(rating)
 
 
-class TitlePostSerializer(serializers.ModelSerializer):
-    genre = serializers.SlugRelatedField(
+class TitlePostSerializer(ModelSerializer):
+    genre = SlugRelatedField(
         slug_field="slug",
         many=True,
         queryset=Genre.objects.all()
     )
-    category = serializers.SlugRelatedField(
+    category = SlugRelatedField(
         slug_field="slug",
         many=False,
         queryset=Category.objects.all()
@@ -70,40 +75,27 @@ class TitlePostSerializer(serializers.ModelSerializer):
         )
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class ReviewSerializer(ModelSerializer):
 
-    author = serializers.SlugRelatedField(
+    author = SlugRelatedField(
         slug_field='username',
         read_only=True,
     )
-    # title = serializers.PrimaryKeyRelatedField(
-    #     read_only=True,
-    #     default=TitleSerializer()
-    # )
 
     class Meta:
-        # exclude = ('id',)
         fields = (
             'id',
             'text',
             'author',
             'score',
             'pub_date',
-            # 'title'
         )
         model = Review
 
 
-# class RatingSerializer(serializers.ModelSerializer):
-#
-#    class Meta:
-#        fields = '__all__'
-#        model = Rating
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(read_only=True)
-    review = serializers.StringRelatedField(read_only=True)
+class CommentSerializer(ModelSerializer):
+    author = StringRelatedField(read_only=True)
+    review = StringRelatedField(read_only=True)
 
     class Meta:
         fields = '__all__'
