@@ -4,7 +4,7 @@ from users.models import CustomUser
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -24,22 +24,19 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField()
     description = models.CharField(max_length=200, blank=True)
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, related_name="titles",
+        Category, on_delete=models.SET_NULL, related_name='titles',
         blank=True, null=True
     )
     genre = models.ManyToManyField(
-        Genre, related_name="titles", blank=True
+        Genre, related_name='titles', blank=True
     )
-
-    def __str__(self):
-        return self.name
 
 
 class Rating(models.Model):
-    value = models.PositiveSmallIntegerField(
-        "Рейтинг",
-        default=10
-    )
+   value = models.PositiveSmallIntegerField(
+       'Рейтинг',
+       default=10
+   )
 
 
 class Review(models.Model):
@@ -60,26 +57,33 @@ class Review(models.Model):
         'Текст отзыва',
         help_text='Введите текст отзыва'
     )
-    score = models.ForeignKey(
-        Rating,
+    score = models.PositiveSmallIntegerField(
         choices=CHOICES,
-        help_text='Оцените произведение',
-        related_name='reviews',
-        default=10,
-        on_delete=models.SET_DEFAULT
+        help_text='Оцените произведение'
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='review'
+        # blank=True
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='reviews'
+        # blank=True
     )
     pub_date = models.DateTimeField(
         auto_now_add=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review'
+            )
+        ]
 
 
 class Comment(models.Model):
