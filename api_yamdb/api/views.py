@@ -1,5 +1,5 @@
 from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .mixins import ModelMixinSet
@@ -14,12 +14,12 @@ from .serializers import (
     CommentSerializer
 
 )
-from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly
+from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly, IsAdminOrReadOnlyIldar
 
 
 class CategoryViewSet(ModelMixinSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+        IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Category.objects.all()
@@ -29,10 +29,10 @@ class CategoryViewSet(ModelMixinSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-
+    
 class GenreViewSet(ModelMixinSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+        IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Genre.objects.all()
@@ -42,11 +42,11 @@ class GenreViewSet(ModelMixinSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-
+   
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        IsAdminOrReadOnly,
-        #IsAuthenticatedOrReadOnly,
+        IsAdminOrReadOnlyIldar,
+        IsAuthenticatedOrReadOnly,
     ]
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
@@ -58,7 +58,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitlePostSerializer
         return TitleSerializer
 
-
+    
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
