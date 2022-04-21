@@ -92,21 +92,23 @@ class ReviewViewSet(APIView, PageNumberPagination):
         if not request.data or not int(request.data['score']) in range(1, 10):
             return Response(status=HTTP_400_BAD_REQUEST)
         title = get_object_or_404(Title, id=title_id)
-        request.POST._mutable = True
-        data = request.data
-        data['author'] = request.user.id
-        data['title'] = title_id
-        request.POST._mutable = False
-        serializer = ReviewSerializer(data=data)
-        try:
-            if serializer.is_valid():
-                serializer.save(
-                    author=request.user,
-                    title_id=title_id
-                )
-                return Response(data=serializer.data, status=HTTP_201_CREATED)
-        except BaseException:
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        if title:
+            request.POST._mutable = True
+            data = request.data
+            data['author'] = request.user.id
+            data['title'] = title_id
+            request.POST._mutable = False
+            serializer = ReviewSerializer(data=data)
+            try:
+                if serializer.is_valid():
+                    serializer.save(
+                        author=request.user,
+                        title_id=title_id
+                    )
+                    return Response(data=serializer.data, status=HTTP_201_CREATED)
+            except BaseException:
+                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 class APIReviewDetail(APIView):
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
@@ -127,7 +129,7 @@ class APIReviewDetail(APIView):
             return Response(data=serializer.data, status=HTTP_200_OK)
         return Response(status=HTTP_400_BAD_REQUEST)
 
-    def delete(self,request, title_id, review_id):
+    def delete(self, request, title_id, review_id):
         review = get_object_or_404(Review, id=review_id)
 
         if request.user.role == USER:

@@ -34,10 +34,10 @@ class Title(models.Model):
 
 
 class Rating(models.Model):
-   value = models.PositiveSmallIntegerField(
-       'Рейтинг',
-       default=10
-   )
+    value = models.PositiveSmallIntegerField(
+        'Рейтинг',
+        default=10
+    )
 
 
 class Review(models.Model):
