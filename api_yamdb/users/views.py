@@ -82,32 +82,28 @@ class UserAuthView(APIView):
                 ]
             }
             return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
-        else:
-            try:
-                username = request.data['username']
-                email = request.data['email']
 
-                serializer = UserCreateSerializer(data=request.data)
-                if serializer.is_valid(raise_exception=True):
-                    serializer.save()
-                    new_user = get_object_or_404(CustomUser, username=username)
-                    code = get_check_hash.make_token(new_user)
-                    send_mail(
-                        from_email='from@example.com',
-                        subject=f'Hello, {username} Confirm your email',
-                        message=f'Your confirmation code: {code}.',
-                        recipient_list=[
-                            email,
-                        ],
-                        fail_silently=False,
-                    )
-                    return Response(data=serializer.data, status=HTTP_200_OK)
-                return Response(
-                    data=serializer.data,
-                    status=HTTP_400_BAD_REQUEST
-                )
-            except BaseException as err:
-                return Response(data=err.args[0], status=HTTP_400_BAD_REQUEST)
+        serializer = UserCreateSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            username = request.data['username']
+            email = request.data['email']
+            serializer.save()
+            new_user = get_object_or_404(CustomUser, username=username)
+            code = get_check_hash.make_token(new_user)
+            send_mail(
+                from_email='from@example.com',
+                subject=f'Hello, {username} Confirm your email',
+                message=f'Your confirmation code: {code}.',
+                recipient_list=[
+                    email,
+                ],
+                fail_silently=False,
+            )
+            return Response(data=serializer.data, status=HTTP_200_OK)
+        return Response(
+            data=serializer.data,
+            status=HTTP_400_BAD_REQUEST
+        )
 
 
 class UserKeyView(TokenObtainPairView):
