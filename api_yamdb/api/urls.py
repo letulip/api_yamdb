@@ -6,6 +6,7 @@ from .views import (
     GenreViewSet,
     TitleViewSet,
     ReviewViewSet,
+    APIReviewDetail,
     CommentViewSet
 )
 
@@ -35,7 +36,7 @@ urlpatterns = [
     ),
     path(
         'api/v1/titles/<int:title_id>/reviews/<int:review_id>/',
-        ReviewViewSet.as_view(),
-        name='reviews'
+        APIReviewDetail.as_view(),
+        name='review_detail'
     )
 ]
