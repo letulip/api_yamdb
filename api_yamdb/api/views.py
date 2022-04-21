@@ -98,7 +98,7 @@ class ReviewViewSet(APIView, PageNumberPagination):
                     title_id=title_id
                 )
                 return Response(data=serializer.data, status=HTTP_201_CREATED)
-        except:
+        except BaseException:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
