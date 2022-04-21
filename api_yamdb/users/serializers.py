@@ -1,13 +1,13 @@
 from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator
 
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer, CharField, EmailField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import CustomUser
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(ModelSerializer):
 
     class Meta():
         fields = (
@@ -17,7 +17,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = CustomUser
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UsersSerializer(ModelSerializer):
 
     class Meta():
         fields = (
@@ -38,7 +38,7 @@ class UsersSerializer(serializers.ModelSerializer):
 
 
 class UserSelfSerializer(UsersSerializer):
-    username = serializers.CharField(
+    username = CharField(
         max_length=150,
         required=False,
         validators=[
@@ -54,19 +54,19 @@ class UserSelfSerializer(UsersSerializer):
             )
         ],
     )
-    email = serializers.EmailField(
+    email = EmailField(
         required=False,
         max_length=255
     )
-    role = serializers.CharField(read_only=True)
+    role = CharField(read_only=True)
 
 
 class UserKeySerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields[self.username_field] = serializers.CharField(required=True)
+        self.fields[self.username_field] = CharField(required=True)
         self.fields['password'].required = False
-        self.fields['confirmation_code'] = serializers.CharField(required=True)
+        self.fields['confirmation_code'] = CharField(required=True)
 
     def validate(self, attrs):
         attrs.update({'password': ''})
