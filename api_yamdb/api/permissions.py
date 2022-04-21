@@ -15,6 +15,32 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
         return request.user.role != USER
 
 
+class IsAdminOrReadOnlyIldar(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        if request.user.is_authenticated:
+            return request.user.role == "admin"
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        if request.user.is_authenticated:
+            return request.user.role == "admin"
+
+
+class IsModerOrReadOnlyIldar(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_anonymous:
+            return request.user.role == MODERATOR
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.role == MODERATOR
+
+
 class IsAdminOrReadOnly(IsAdminUser):
 
     def has_permission(self, request, view):
@@ -27,16 +53,4 @@ class IsAdminOrReadOnly(IsAdminUser):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return request.user.is_staff or request.user.role == ADMIN
-
-
-class IsModerOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_anonymous:
-            return request.user.role == MODERATOR
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user.role == MODERATOR
+        return request.user.is_staff or request.user.role == ADMIN      

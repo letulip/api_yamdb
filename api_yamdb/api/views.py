@@ -1,23 +1,25 @@
 from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .mixins import ModelMixinSet
+from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, Review, Comment
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleSerializer,
+    TitlePostSerializer,
     ReviewSerializer,
     CommentSerializer
 
 )
-from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly
+from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly, IsAdminOrReadOnlyIldar
 
 
 class CategoryViewSet(ModelMixinSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+        IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Category.objects.all()
@@ -27,10 +29,10 @@ class CategoryViewSet(ModelMixinSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-
-class GenreViewSet(viewsets.ModelViewSet):
+    
+class GenreViewSet(ModelMixinSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+        IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Genre.objects.all()
@@ -40,18 +42,23 @@ class GenreViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-
+   
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [
-        IsAdminOrReadOnly,
+        IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
     ]
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('category', 'genre', 'name', 'year')
+    filterset_class = TitleFilter
 
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH',):
+            return TitlePostSerializer
+        return TitleSerializer
 
+    
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer

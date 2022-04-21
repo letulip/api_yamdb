@@ -4,7 +4,7 @@ from users.models import CustomUser
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
@@ -30,9 +30,6 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre, related_name="titles", blank=True
     )
-
-    def __str__(self):
-        return self.name
 
 
 class Rating(models.Model):
