@@ -100,3 +100,6 @@ class Comment(models.Model):
         'Текст коммента',
         help_text='Введите коммент'
     )
+    pub_date = models.DateTimeField(
+        auto_now_add=True
+    )
