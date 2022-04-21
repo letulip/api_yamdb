@@ -1,4 +1,8 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAdminUser
+from rest_framework.permissions import (
+    BasePermission,
+    SAFE_METHODS,
+    IsAdminUser
+)
 
 from api_yamdb.settings import USER, MODERATOR, ADMIN
 
@@ -20,25 +24,25 @@ class IsAdminOrReadOnlyIldar(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         if request.user.is_authenticated:
-            return request.user.role == "admin"
+            return request.user.is_staff or request.user.role == ADMIN
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
         if request.user.is_authenticated:
-            return request.user.role == "admin"
+            return request.user.is_staff or request.user.role == ADMIN
 
 
-class IsModerOrReadOnlyIldar(BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_anonymous:
-            return request.user.role == MODERATOR
-        return False
+# class IsModerOrReadOnlyIldar(BasePermission):
+#     def has_permission(self, request, view):
+#         if not request.user.is_anonymous:
+#             return request.user.role == MODERATOR
+#         return False
 
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user.role == MODERATOR
+#     def has_object_permission(self, request, view, obj):
+#         if request.method in SAFE_METHODS:
+#             return True
+#         return request.user.role == MODERATOR
 
 
 class IsAdminOrReadOnly(IsAdminUser):
@@ -47,10 +51,8 @@ class IsAdminOrReadOnly(IsAdminUser):
         if not request.user.is_anonymous:
             return request.user.is_staff or request.user.role == ADMIN
         return False
-        # is_admin = super().has_permission(request, view)
-        # return request.method in SAFE_METHODS or is_admin
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return request.user.is_staff or request.user.role == ADMIN      
+        return request.user.is_staff or request.user.role == ADMIN

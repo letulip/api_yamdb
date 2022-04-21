@@ -8,7 +8,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.status import (
-    HTTP_404_NOT_FOUND,
     HTTP_200_OK,
     HTTP_400_BAD_REQUEST
 )
@@ -71,11 +70,11 @@ class UserAuthView(APIView):
     def post(self, request: HttpRequest):
         if not request.data:
             resp_obj = {
-                "email": [
-                    "This field is required."
+                'email': [
+                    'This field is required.'
                 ],
-                "username": [
-                    "This field is required."
+                'username': [
+                    'This field is required.'
                 ]
             }
             return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)

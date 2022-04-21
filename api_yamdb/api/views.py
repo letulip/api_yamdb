@@ -1,5 +1,5 @@
 from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .mixins import ModelMixinSet
@@ -14,7 +14,10 @@ from .serializers import (
     CommentSerializer
 
 )
-from .permissions import IsOwnerModerAdminOrReadOnly, IsAdminOrReadOnly, IsAdminOrReadOnlyIldar
+from .permissions import (
+    IsOwnerModerAdminOrReadOnly,
+    IsAdminOrReadOnlyIldar
+)
 
 
 class CategoryViewSet(ModelMixinSet):
@@ -29,7 +32,7 @@ class CategoryViewSet(ModelMixinSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-    
+
 class GenreViewSet(ModelMixinSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
@@ -42,7 +45,7 @@ class GenreViewSet(ModelMixinSet):
     search_fields = ('name',)
     lookup_field = 'slug'
 
-   
+
 class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
@@ -58,7 +61,7 @@ class TitleViewSet(viewsets.ModelViewSet):
             return TitlePostSerializer
         return TitleSerializer
 
-    
+
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -73,7 +76,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
 
     def get_queryset(self):
-        comment_id = self.kwargs.get("comment_id")
+        comment_id = self.kwargs.get('comment_id')
         new_queryset = Comment.objects.filter(id=comment_id)
         return new_queryset
 
