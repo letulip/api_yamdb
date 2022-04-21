@@ -9,7 +9,6 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_201_CREATED,
     HTTP_200_OK,
-    HTTP_404_NOT_FOUND,
     HTTP_204_NO_CONTENT,
     HTTP_403_FORBIDDEN
 )
@@ -110,7 +109,7 @@ class ReviewViewSet(APIView, PageNumberPagination):
 
 class APIReviewDetail(APIView):
     permission_classes = (IsOwnerModerAdminOrReadOnly,)
-    
+
     def get(self, request, title_id, review_id):
         review = get_object_or_404(Review, id=review_id)
         serializer = ReviewSerializer(review)
@@ -118,7 +117,7 @@ class APIReviewDetail(APIView):
 
     def patch(self, request, title_id, review_id):
         review = get_object_or_404(Review, id=review_id)
-        # костыль
+
         if request.user != review.author:
             return Response(status=HTTP_403_FORBIDDEN)
         serializer = ReviewSerializer(review, data=request.data, partial=True)
@@ -129,7 +128,7 @@ class APIReviewDetail(APIView):
 
     def delete(self,request, title_id, review_id):
         review = get_object_or_404(Review, id=review_id)
-        # костыль
+
         if request.user.role == USER:
             return Response(status=HTTP_403_FORBIDDEN)
         review.delete()
@@ -150,9 +149,7 @@ class CommentViewSet(ModelViewSet):
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        title_id = self.kwargs.get('title_id')
         serializer.save(
             author=self.request.user,
             review=review,
-            #title=title_id,
         )
