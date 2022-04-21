@@ -5,7 +5,14 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_201_CREATED,
+    HTTP_200_OK,
+    HTTP_404_NOT_FOUND,
+    HTTP_204_NO_CONTENT,
+    HTTP_403_FORBIDDEN
+)
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
@@ -23,8 +30,9 @@ from .serializers import (
 )
 from .permissions import (
     IsOwnerModerAdminOrReadOnly,
-    IsAdminOrReadOnlyIldar
+    IsAdminOrReadOnlyIldar,
 )
+from api_yamdb.settings import USER
 
 
 class CategoryViewSet(ModelMixinSet):
@@ -100,6 +108,33 @@ class ReviewViewSet(APIView, PageNumberPagination):
                 return Response(data=serializer.data, status=HTTP_201_CREATED)
         except BaseException:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class APIReviewDetail(APIView):
+    permission_classes = (IsOwnerModerAdminOrReadOnly,)
+    
+    def get(self, request, title_id, review_id):
+        review = get_object_or_404(Review, id=review_id)
+        serializer = ReviewSerializer(review)
+        return Response(data=serializer.data, status=HTTP_200_OK)
+
+    def patch(self, request, title_id, review_id):
+        review = get_object_or_404(Review, id=review_id)
+        # костыль
+        if request.user != review.author:
+            return Response(status=HTTP_403_FORBIDDEN)
+        serializer = ReviewSerializer(review, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(data=serializer.data, status=HTTP_200_OK)
+        return Response(status=HTTP_400_BAD_REQUEST)
+
+    def delete(self,request, title_id, review_id):
+        review = get_object_or_404(Review, id=review_id)
+        # костыль
+        if request.user.role == USER:
+            return Response(status=HTTP_403_FORBIDDEN)
+        review.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class ReviewSingleView(APIView):
