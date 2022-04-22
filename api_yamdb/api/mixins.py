@@ -6,8 +6,8 @@ from rest_framework.mixins import (
 )
 
 
-class ModelMixinSet(CreateModelMixin, ListModelMixin,
-                    DestroyModelMixin, GenericViewSet):
+class CreateListDestroyViewSet(CreateModelMixin, ListModelMixin,
+                               DestroyModelMixin, GenericViewSet):
     pass
 
 
