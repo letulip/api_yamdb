@@ -15,16 +15,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
+from api.permissions import IsAdminOrReadOnly
+from api.utils import get_check_hash
 from .models import CustomUser
+from .pagination import CustomPagination
 from .serializers import (
     UsersSerializer,
     UserKeySerializer,
     UserSelfSerializer,
     UserCreateSerializer
 )
-from .pagination import CustomPagination
-from .tokens import get_check_hash
-from api.permissions import IsAdminOrReadOnly
 
 
 class UsersViewSet(ModelViewSet):
