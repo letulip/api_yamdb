@@ -4,7 +4,7 @@ from rest_framework.permissions import (
     IsAdminUser
 )
 
-from api_yamdb.settings import USER, ADMIN
+from users.models import USER, ADMIN
 
 
 class IsOwnerModerAdminOrReadOnly(BasePermission):

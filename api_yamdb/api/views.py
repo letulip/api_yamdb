@@ -15,8 +15,8 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
-from api_yamdb.settings import USER
 from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import USER
 from .filters import TitleFilter
 from .mixins import CreateListDestroyViewSet
 from .permissions import (
