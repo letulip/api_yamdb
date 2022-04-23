@@ -15,7 +15,7 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
-from .mixins import ModelMixinSet
+from .mixins import CreateListDestroyViewSet
 from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, Review, Comment
 from .serializers import (
@@ -35,7 +35,7 @@ from .permissions import (
 from api_yamdb.settings import USER
 
 
-class CategoryViewSet(ModelMixinSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
@@ -48,7 +48,7 @@ class CategoryViewSet(ModelMixinSet):
     lookup_field = 'slug'
 
 
-class GenreViewSet(ModelMixinSet):
+class GenreViewSet(CreateListDestroyViewSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
