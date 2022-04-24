@@ -15,9 +15,15 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
-from .mixins import CreateListDestroyViewSet
-from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import USER
+from .filters import TitleFilter
+from .mixins import CreateListDestroyViewSet
+from .permissions import (
+    IsOwnerModerAdminOrReadOnly,
+    IsAdminOrReadOnlyIldar,
+    IsOwnerModerAdminOrReadOnlyKonstantin,
+)
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -27,12 +33,6 @@ from .serializers import (
     CommentSerializer
 
 )
-from .permissions import (
-    IsOwnerModerAdminOrReadOnly,
-    IsAdminOrReadOnlyIldar,
-    IsOwnerModerAdminOrReadOnlyKonstantin,
-)
-from api_yamdb.settings import USER
 
 
 class CategoryViewSet(CreateListDestroyViewSet):

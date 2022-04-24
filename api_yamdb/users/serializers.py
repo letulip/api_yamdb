@@ -1,10 +1,12 @@
 from django.contrib.auth.hashers import make_password
 from django.core.validators import RegexValidator
+from django.core.mail import send_mail
 
 from rest_framework.serializers import ModelSerializer, CharField, EmailField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import CustomUser
+from api.utils import get_check_hash
 
 
 class UserCreateSerializer(ModelSerializer):
@@ -15,6 +17,25 @@ class UserCreateSerializer(ModelSerializer):
             'username',
         )
         model = CustomUser
+
+    def create(self, validated_data):
+        """
+        Создать и вернуть нового CustomUser если данные валидные.
+        """
+        new_user = CustomUser.objects.create(**validated_data)
+        username = new_user.username
+        email = new_user.email
+        code = get_check_hash.make_token(new_user)
+        send_mail(
+            from_email='from@example.com',
+            subject=f'Hello, {username} Confirm your email',
+            message=f'Your confirmation code: {code}.',
+            recipient_list=[
+                email,
+            ],
+            fail_silently=False,
+        )
+        return new_user
 
 
 class UsersSerializer(ModelSerializer):
