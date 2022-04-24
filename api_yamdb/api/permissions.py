@@ -4,7 +4,7 @@ from rest_framework.permissions import (
     IsAdminUser
 )
 
-from users.models import USER, ADMIN
+from users.models import USER, ADMIN, MODERATOR
 
 
 class IsOwnerModerAdminOrReadOnly(BasePermission):
@@ -56,7 +56,8 @@ class AuthorModerAdmOrRead(BasePermission):
 
         return (
             request.method in SAFE_METHODS or (
-                obj.author == request.user) or (
-                    request.user.role in ('moderator', 'admin')
-                )
+                obj.author == request.user
+            ) or (
+                request.user.role in (MODERATOR, ADMIN)
+            )
         )

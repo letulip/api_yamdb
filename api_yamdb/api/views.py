@@ -8,15 +8,9 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_201_CREATED,
-    HTTP_200_OK,
-    HTTP_204_NO_CONTENT,
-    HTTP_403_FORBIDDEN
 )
-from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
-from reviews.models import Category, Genre, Title, Review, Comment
-from users.models import USER
 from .filters import TitleFilter
 from .mixins import CreateListDestroyViewSet
 from .serializers import (
@@ -29,11 +23,10 @@ from .serializers import (
 
 )
 from .permissions import (
-    IsOwnerModerAdminOrReadOnly,
     IsAdminOrReadOnlyIldar,
     AuthorModerAdmOrRead
 )
-from users.models import USER
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class CategoryViewSet(CreateListDestroyViewSet):
@@ -119,19 +112,17 @@ class CommentViewSet(ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         new_queryset = Comment.objects.filter(review_id=review_id)
-
         return new_queryset
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
-        
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(
