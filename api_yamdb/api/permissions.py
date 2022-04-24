@@ -4,7 +4,7 @@ from rest_framework.permissions import (
     IsAdminUser
 )
 
-from users.models import USER, ADMIN
+from users.models import USER, ADMIN, MODERATOR
 
 
 class IsOwnerModerAdminOrReadOnly(BasePermission):
@@ -46,13 +46,18 @@ class IsAdminOrReadOnly(IsAdminUser):
         return request.user.is_staff or request.user.role == ADMIN
 
 
-class IsOwnerModerAdminOrReadOnlyKonstantin(BasePermission):
-
+class AuthorModerAdmOrRead(BasePermission):
     def has_permission(self, request, view):
-        return (request.user.id is not None
-                or request.method in SAFE_METHODS)
+        if request.method not in SAFE_METHODS:
+            return request.user.is_authenticated
+        return True
 
     def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS:
-            return True
-        return obj.author == request.user or request.user.role != USER
+
+        return (
+            request.method in SAFE_METHODS or (
+                obj.author == request.user
+            ) or (
+                request.user.role in (MODERATOR, ADMIN)
+            )
+        )
