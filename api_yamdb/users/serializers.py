@@ -3,6 +3,11 @@ from django.core.validators import RegexValidator
 
 from rest_framework.serializers import ModelSerializer, CharField, EmailField
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST
+)
 
 from .models import CustomUser
 
@@ -15,6 +20,12 @@ class UserCreateSerializer(ModelSerializer):
             'username',
         )
         model = CustomUser
+
+    def create(self, validated_data):
+        """
+        Create and return a new `Snippet` instance, given the validated data.
+        """
+        return CustomUser.objects.create(**validated_data)
 
 
 class UsersSerializer(ModelSerializer):

@@ -53,7 +53,7 @@ class Review(models.Model):
         (9, 'девять'),
         (10, 'десять')
     )
-    
+
     text = models.TextField(
         'Текст отзыва',
         help_text='Введите текст отзыва'

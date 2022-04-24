@@ -68,16 +68,6 @@ class UserAuthView(APIView):
     http_method_names = ['post', ]
 
     def post(self, request: HttpRequest):
-        if not request.data:
-            resp_obj = {
-                'email': [
-                    'This field is required.'
-                ],
-                'username': [
-                    'This field is required.'
-                ]
-            }
-            return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
 
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
