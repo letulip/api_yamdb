@@ -75,7 +75,7 @@ class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
 
-    permission_classes = [AuthorModerAdmOrRead,]
+    permission_classes = [AuthorModerAdmOrRead, ]
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
