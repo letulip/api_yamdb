@@ -1,6 +1,5 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter
@@ -15,16 +14,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
+from api.permissions import IsAdminOrReadOnly
+from api.utils import get_check_hash
 from .models import CustomUser
+from .pagination import CustomPagination
 from .serializers import (
     UsersSerializer,
     UserKeySerializer,
     UserSelfSerializer,
     UserCreateSerializer
 )
-from .pagination import CustomPagination
-from .tokens import get_check_hash
-from api.permissions import IsAdminOrReadOnly
 
 
 class UsersViewSet(ModelViewSet):
@@ -52,7 +51,7 @@ class UsersViewSet(ModelViewSet):
             serializer = UsersSerializer(user)
             return Response(serializer.data)
 
-        elif request.method == 'PATCH':
+        if request.method == 'PATCH':
             if request.user.role == 'admin':
                 serializer = UsersSerializer(user, data=request.data)
             else:
@@ -68,36 +67,12 @@ class UserAuthView(APIView):
     http_method_names = ['post', ]
 
     def post(self, request: HttpRequest):
-        if not request.data:
-            resp_obj = {
-                'email': [
-                    'This field is required.'
-                ],
-                'username': [
-                    'This field is required.'
-                ]
-            }
-            return Response(data=resp_obj, status=HTTP_400_BAD_REQUEST)
-
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            username = request.data['username']
-            email = request.data['email']
             serializer.save()
-            new_user = get_object_or_404(CustomUser, username=username)
-            code = get_check_hash.make_token(new_user)
-            send_mail(
-                from_email='from@example.com',
-                subject=f'Hello, {username} Confirm your email',
-                message=f'Your confirmation code: {code}.',
-                recipient_list=[
-                    email,
-                ],
-                fail_silently=False,
-            )
             return Response(data=serializer.data, status=HTTP_200_OK)
         return Response(
-            data=serializer.data,
+            data=serializer.errors,
             status=HTTP_400_BAD_REQUEST
         )
 

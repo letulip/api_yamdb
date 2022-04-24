@@ -122,31 +122,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-
-USER = 'user'
-MODERATOR = 'moderator'
-ADMIN = 'admin'
-
-ROLE_CHOICES = (
-    (USER, 'user'),
-    (MODERATOR, 'moderator'),
-    (ADMIN, 'admin')
-)
-
-
-CHOICES = (
-    (1, 'один'),
-    (2, 'два'),
-    (3, 'три'),
-    (4, 'четыре'),
-    (5, 'пять'),
-    (6, 'шесть'),
-    (7, 'семь'),
-    (8, 'восемь'),
-    (9, 'девять'),
-    (10, 'десять')
-)
-
 SIMPLE_JWT = {
     # Устанавливаем срок жизни токена
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

@@ -15,9 +15,15 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
-from .mixins import ModelMixinSet
-from .filters import TitleFilter
 from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import USER
+from .filters import TitleFilter
+from .mixins import CreateListDestroyViewSet
+from .permissions import (
+    IsOwnerModerAdminOrReadOnly,
+    IsAdminOrReadOnlyIldar,
+    IsOwnerModerAdminOrReadOnlyKonstantin,
+)
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -27,6 +33,7 @@ from .serializers import (
     CommentSerializer
 
 )
+<<<<<<< HEAD
 from .permissions import (
     IsOwnerModerAdminOrReadOnly,
     IsAdminOrReadOnlyIldar,
@@ -34,9 +41,11 @@ from .permissions import (
     AuthorModerAdmOrRead
 )
 from api_yamdb.settings import USER
+=======
+>>>>>>> 1a06f951ddd7a64bbc37402d2db5292d0884a135
 
 
-class CategoryViewSet(ModelMixinSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,
@@ -49,7 +58,7 @@ class CategoryViewSet(ModelMixinSet):
     lookup_field = 'slug'
 
 
-class GenreViewSet(ModelMixinSet):
+class GenreViewSet(CreateListDestroyViewSet):
     permission_classes = [
         IsAdminOrReadOnlyIldar,
         IsAuthenticatedOrReadOnly,

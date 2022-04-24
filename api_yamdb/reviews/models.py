@@ -1,10 +1,10 @@
 from django.db import models
 
 from users.models import CustomUser
-from api_yamdb.settings import CHOICES
 
 
 class Category(models.Model):
+
     name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True)
 
@@ -41,6 +41,19 @@ class Rating(models.Model):
 
 
 class Review(models.Model):
+    CHOICES = (
+        (1, 'один'),
+        (2, 'два'),
+        (3, 'три'),
+        (4, 'четыре'),
+        (5, 'пять'),
+        (6, 'шесть'),
+        (7, 'семь'),
+        (8, 'восемь'),
+        (9, 'девять'),
+        (10, 'десять')
+    )
+
     text = models.TextField(
         'Текст отзыва',
         help_text='Введите текст отзыва'
