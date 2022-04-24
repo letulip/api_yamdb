@@ -51,7 +51,7 @@ class UsersViewSet(ModelViewSet):
             serializer = UsersSerializer(user)
             return Response(serializer.data)
 
-        elif request.method == 'PATCH':
+        if request.method == 'PATCH':
             if request.user.role == 'admin':
                 serializer = UsersSerializer(user, data=request.data)
             else:
