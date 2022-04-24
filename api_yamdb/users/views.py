@@ -1,6 +1,5 @@
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter
@@ -68,26 +67,12 @@ class UserAuthView(APIView):
     http_method_names = ['post', ]
 
     def post(self, request: HttpRequest):
-
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            username = request.data['username']
-            email = request.data['email']
             serializer.save()
-            new_user = get_object_or_404(CustomUser, username=username)
-            code = get_check_hash.make_token(new_user)
-            send_mail(
-                from_email='from@example.com',
-                subject=f'Hello, {username} Confirm your email',
-                message=f'Your confirmation code: {code}.',
-                recipient_list=[
-                    email,
-                ],
-                fail_silently=False,
-            )
             return Response(data=serializer.data, status=HTTP_200_OK)
         return Response(
-            data=serializer.data,
+            data=serializer.errors,
             status=HTTP_400_BAD_REQUEST
         )
 

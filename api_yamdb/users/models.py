@@ -24,6 +24,12 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
+        # Валидаторы здесь, потому что у меня два разных сериализатора
+        # для разных эндпоинтов, ошибки валидации хорошо видно, пример postman:
+        # "username": [
+        #     "This value may contain only letters,\n
+        #      digits and @/./+/-/_ characters."
+        # ]
         validators=[
             RegexValidator(
                 regex=r'^[\w.@+-_]+$',
