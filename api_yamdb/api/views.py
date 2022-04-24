@@ -85,7 +85,7 @@ class ReviewViewSet(ModelViewSet):
     permission_classes = [AuthorModerAdmOrRead,]
 
     def get_queryset(self):
-        title_id = self.kwargs.get("title_id")
+        title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         reviews = title.reviews.all()
         return reviews
@@ -93,7 +93,7 @@ class ReviewViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        title_id = self.kwargs.get("title_id")
+        title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         list_res = title.reviews.filter(author=self.request.user)
         if list_res:
@@ -107,7 +107,7 @@ class ReviewViewSet(ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        title_id = self.kwargs.get("title_id")
+        title_id = self.kwargs.get('title_id')
         serializer.save(author=self.request.user, title_id=title_id)
 
 
