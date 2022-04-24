@@ -7,14 +7,14 @@ USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
 
-ROLE_CHOICES = (
-    (USER, 'user'),
-    (MODERATOR, 'moderator'),
-    (ADMIN, 'admin')
-)
-
 
 class CustomUser(AbstractUser):
+
+    ROLE_CHOICES = (
+        (USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMIN, 'admin')
+    )
 
     email = models.EmailField(
         max_length=255,
