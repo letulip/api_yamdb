@@ -95,7 +95,7 @@ class ReviewSerializer(ModelSerializer):
 
 class CommentSerializer(ModelSerializer):
     author = StringRelatedField(read_only=True)
-    review = StringRelatedField(read_only=True)
+    # review = StringRelatedField(read_only=True)
 
     class Meta:
         fields = '__all__'
