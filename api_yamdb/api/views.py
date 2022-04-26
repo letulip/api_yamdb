@@ -93,14 +93,13 @@ class ReviewViewSet(ModelViewSet):
             return Response(
                 serializer.errors, status=HTTP_400_BAD_REQUEST
             )
-        self.perform_create(serializer)
+        self.perform_create(serializer, title_id)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=HTTP_201_CREATED, headers=headers
         )
 
-    def perform_create(self, serializer):
-        title_id = self.kwargs.get('title_id')
+    def perform_create(self, serializer, title_id):
         serializer.save(author=self.request.user, title_id=title_id)
 
 
@@ -114,16 +113,15 @@ class CommentViewSet(ModelViewSet):
         new_queryset = Comment.objects.filter(review_id=review_id)
         return new_queryset
 
-    def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
+    def perform_create(self, serializer, review_id):
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        self.perform_create(serializer)
+        review_id = self.kwargs.get('review_id')
+        self.perform_create(serializer, review_id)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=HTTP_201_CREATED, headers=headers
