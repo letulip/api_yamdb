@@ -3,12 +3,10 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
-USER = 'user'
-MODERATOR = 'moderator'
-ADMIN = 'admin'
-
-
 class CustomUser(AbstractUser):
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
 
     ROLE_CHOICES = (
         (USER, 'user'),
@@ -67,3 +65,15 @@ class CustomUser(AbstractUser):
 
     def __str__(self) -> str:
         return self.username
+
+    def is_moder(self):
+        return self.role == self.MODERATOR
+
+    def is_admin(self):
+        return self.role == self.ADMIN
+
+    def is_moder_or_admin(self):
+        return self.role == self.MODERATOR or self.role == self.ADMIN
+
+    def is_user(self):
+        return self.role == self.USER

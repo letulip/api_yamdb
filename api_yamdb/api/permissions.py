@@ -4,8 +4,6 @@ from rest_framework.permissions import (
     IsAdminUser
 )
 
-from users.models import USER, ADMIN, MODERATOR
-
 
 class IsOwnerModerAdminOrReadOnly(BasePermission):
 
@@ -16,7 +14,7 @@ class IsOwnerModerAdminOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return request.user.role != USER
+        return not request.user.is_user()
 
 
 class IsAdminOrReadOnlyIldar(BasePermission):
@@ -24,26 +22,26 @@ class IsAdminOrReadOnlyIldar(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         if request.user.is_authenticated:
-            return request.user.is_staff or request.user.role == ADMIN
+            return request.user.is_staff or request.user.is_admin()
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
         if request.user.is_authenticated:
-            return request.user.is_staff or request.user.role == ADMIN
+            return request.user.is_staff or request.user.is_admin()
 
 
 class IsAdminOrReadOnly(IsAdminUser):
 
     def has_permission(self, request, view):
         if not request.user.is_anonymous:
-            return request.user.is_staff or request.user.role == ADMIN
+            return request.user.is_staff or request.user.is_admin()
         return False
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return request.user.is_staff or request.user.role == ADMIN
+        return request.user.is_staff or request.user.is_admin()
 
 
 class AuthorModerAdmOrRead(BasePermission):
@@ -58,6 +56,6 @@ class AuthorModerAdmOrRead(BasePermission):
             request.method in SAFE_METHODS or (
                 obj.author == request.user
             ) or (
-                request.user.role in (MODERATOR, ADMIN)
+                request.user.is_moder_or_admin()
             )
         )
